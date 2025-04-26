@@ -1,0 +1,38 @@
+package visualization_msgs;
+
+struct Marker {
+    const int8_t ARROW = 0;
+    const int8_t CUBE = 1;
+    const int8_t SPHERE = 2;
+    const int8_t CYLINDER = 3;
+    const int8_t LINE_STRIP = 4;
+    const int8_t LINE_LIST = 5;
+    const int8_t CUBE_LIST = 6;
+    const int8_t SPHERE_LIST = 7;
+    const int8_t POINTS = 8;
+    const int8_t TEXT_VIEW_FACING = 9;
+    const int8_t MESH_RESOURCE = 10;
+    const int8_t TRIANGLE_LIST = 11;
+    const int8_t ADD = 0;
+    const int8_t MODIFY = 0;
+    const int8_t DELETE = 2;
+    const int8_t DELETEALL = 3;
+
+    int32_t points_length;
+    int32_t colors_length;
+    std_msgs.Header header;
+    string ns;
+    int32_t id;
+    int32_t type;
+    int32_t action;
+    geometry_msgs.Pose pose;
+    geometry_msgs.Vector3 scale;
+    std_msgs.ColorRGBA color;
+    int64_t lifetime;
+    boolean frame_locked;
+    geometry_msgs.Point points[points_length];
+    std_msgs.ColorRGBA colors[colors_length];
+    string text;
+    string mesh_resource;
+    boolean mesh_use_embedded_materials;
+}

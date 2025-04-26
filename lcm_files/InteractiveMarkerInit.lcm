@@ -1,0 +1,8 @@
+package visualization_msgs;
+
+struct InteractiveMarkerInit {
+    int32_t markers_length;
+    string server_id;
+    int64_t seq_num;
+    InteractiveMarker markers[markers_length];
+}

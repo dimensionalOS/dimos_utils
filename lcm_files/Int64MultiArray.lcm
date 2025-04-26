@@ -1,0 +1,7 @@
+package std_msgs;
+
+struct Int64MultiArray {
+    int32_t data_length;
+    MultiArrayLayout layout;
+    int64_t data[data_length];
+}

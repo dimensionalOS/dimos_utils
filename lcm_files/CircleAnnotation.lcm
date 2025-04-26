@@ -1,0 +1,10 @@
+package foxglove_msgs;
+
+struct CircleAnnotation {
+    builtin_interfaces.Time timestamp;
+    foxglove_msgs.Point2 position;
+    double diameter;
+    double thickness;
+    foxglove_msgs.Color fill_color;
+    foxglove_msgs.Color outline_color;
+}

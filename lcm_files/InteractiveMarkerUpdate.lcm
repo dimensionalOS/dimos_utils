@@ -1,0 +1,16 @@
+package visualization_msgs;
+
+struct InteractiveMarkerUpdate {
+    const int8_t KEEP_ALIVE = 0;
+    const int8_t UPDATE = 1;
+
+    int32_t markers_length;
+    int32_t poses_length;
+    int32_t erases_length;
+    string server_id;
+    int64_t seq_num;
+    byte type;
+    InteractiveMarker markers[markers_length];
+    InteractiveMarkerPose poses[poses_length];
+    string erases[erases_length];
+}

@@ -1,0 +1,4 @@
+package std_msgs;
+
+struct Empty {
+}

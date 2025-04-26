@@ -1,0 +1,27 @@
+package visualization_msgs;
+
+struct InteractiveMarkerControl {
+    const int8_t INHERIT = 0;
+    const int8_t FIXED = 1;
+    const int8_t VIEW_FACING = 2;
+    const int8_t NONE = 0;
+    const int8_t MENU = 1;
+    const int8_t BUTTON = 2;
+    const int8_t MOVE_AXIS = 3;
+    const int8_t MOVE_PLANE = 4;
+    const int8_t ROTATE_AXIS = 5;
+    const int8_t MOVE_ROTATE = 6;
+    const int8_t MOVE_3D = 7;
+    const int8_t ROTATE_3D = 8;
+    const int8_t MOVE_ROTATE_3D = 9;
+
+    int32_t markers_length;
+    string name;
+    geometry_msgs.Quaternion orientation;
+    byte orientation_mode;
+    byte interaction_mode;
+    boolean always_visible;
+    Marker markers[markers_length];
+    boolean independent_marker_orientation;
+    string description;
+}

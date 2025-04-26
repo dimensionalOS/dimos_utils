@@ -1,0 +1,7 @@
+package std_msgs;
+
+struct MultiArrayDimension {
+    string label;
+    int32_t size;
+    int32_t stride;
+}

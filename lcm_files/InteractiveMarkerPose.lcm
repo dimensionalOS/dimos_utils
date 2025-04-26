@@ -1,0 +1,7 @@
+package visualization_msgs;
+
+struct InteractiveMarkerPose {
+    std_msgs.Header header;
+    geometry_msgs.Pose pose;
+    string name;
+}

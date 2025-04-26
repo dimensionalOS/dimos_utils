@@ -1,0 +1,5 @@
+package std_msgs;
+
+struct UInt16 {
+    int16_t data;
+}

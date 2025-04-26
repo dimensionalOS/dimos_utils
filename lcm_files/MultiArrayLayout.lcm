@@ -1,0 +1,7 @@
+package std_msgs;
+
+struct MultiArrayLayout {
+    int32_t dim_length;
+    MultiArrayDimension dim[dim_length];
+    int32_t data_offset;
+}

@@ -1,0 +1,16 @@
+package sensor_msgs;
+
+struct NavSatFix {
+    const int8_t COVARIANCE_TYPE_UNKNOWN = 0;
+    const int8_t COVARIANCE_TYPE_APPROXIMATED = 1;
+    const int8_t COVARIANCE_TYPE_DIAGONAL_KNOWN = 2;
+    const int8_t COVARIANCE_TYPE_KNOWN = 3;
+
+    std_msgs.Header header;
+    NavSatStatus status;
+    double latitude;
+    double longitude;
+    double altitude;
+    double position_covariance[9];
+    byte position_covariance_type;
+}

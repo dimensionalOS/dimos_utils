@@ -1,0 +1,17 @@
+package foxglove_msgs;
+
+struct Log {
+    const int8_t UNKNOWN = 0;
+    const int8_t DEBUG = 1;
+    const int8_t INFO = 2;
+    const int8_t WARNING = 3;
+    const int8_t ERROR = 4;
+    const int8_t FATAL = 5;
+
+    builtin_interfaces.Time timestamp;
+    byte level;
+    string message;
+    string name;
+    string file;
+    int32_t line;
+}

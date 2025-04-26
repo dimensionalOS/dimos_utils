@@ -1,0 +1,5 @@
+package std_msgs;
+
+struct UInt8 {
+    byte data;
+}

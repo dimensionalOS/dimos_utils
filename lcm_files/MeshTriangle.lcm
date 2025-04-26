@@ -1,0 +1,5 @@
+package shape_msgs;
+
+struct MeshTriangle {
+    int32_t vertex_indices[3];
+}

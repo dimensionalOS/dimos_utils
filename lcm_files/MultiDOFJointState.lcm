@@ -1,0 +1,13 @@
+package sensor_msgs;
+
+struct MultiDOFJointState {
+    int32_t joint_names_length;
+    int32_t transforms_length;
+    int32_t twist_length;
+    int32_t wrench_length;
+    std_msgs.Header header;
+    string joint_names[joint_names_length];
+    geometry_msgs.Transform transforms[transforms_length];
+    geometry_msgs.Twist twist[twist_length];
+    geometry_msgs.Wrench wrench[wrench_length];
+}

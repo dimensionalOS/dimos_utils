@@ -1,0 +1,13 @@
+package visualization_msgs;
+
+struct MenuEntry {
+    const int8_t FEEDBACK = 0;
+    const int8_t ROSRUN = 1;
+    const int8_t ROSLAUNCH = 2;
+
+    int32_t id;
+    int32_t parent_id;
+    string title;
+    string command;
+    byte command_type;
+}

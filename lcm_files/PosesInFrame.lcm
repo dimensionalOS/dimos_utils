@@ -1,0 +1,8 @@
+package foxglove_msgs;
+
+struct PosesInFrame {
+    int32_t poses_length;
+    builtin_interfaces.Time timestamp;
+    string frame_id;
+    geometry_msgs.Pose poses[poses_length];
+}

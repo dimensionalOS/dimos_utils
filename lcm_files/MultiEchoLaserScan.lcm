@@ -1,0 +1,16 @@
+package sensor_msgs;
+
+struct MultiEchoLaserScan {
+    int32_t ranges_length;
+    int32_t intensities_length;
+    std_msgs.Header header;
+    float angle_min;
+    float angle_max;
+    float angle_increment;
+    float time_increment;
+    float scan_time;
+    float range_min;
+    float range_max;
+    LaserEcho ranges[ranges_length];
+    LaserEcho intensities[intensities_length];
+}

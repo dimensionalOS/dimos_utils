@@ -1,0 +1,11 @@
+package sensor_msgs;
+
+struct JoyFeedback {
+    const int8_t TYPE_LED = 0;
+    const int8_t TYPE_RUMBLE = 1;
+    const int8_t TYPE_BUZZER = 2;
+
+    byte type;
+    byte id;
+    float intensity;
+}

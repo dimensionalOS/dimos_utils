@@ -1,0 +1,18 @@
+package actionlib_msgs;
+
+struct GoalStatus {
+    const int8_t PENDING = 0;
+    const int8_t ACTIVE = 1;
+    const int8_t PREEMPTED = 2;
+    const int8_t SUCCEEDED = 3;
+    const int8_t ABORTED = 4;
+    const int8_t REJECTED = 5;
+    const int8_t PREEMPTING = 6;
+    const int8_t RECALLING = 7;
+    const int8_t RECALLED = 8;
+    const int8_t LOST = 9;
+
+    GoalID goal_id;
+    byte status;
+    string text;
+}

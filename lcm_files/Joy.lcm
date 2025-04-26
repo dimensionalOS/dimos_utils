@@ -1,0 +1,9 @@
+package sensor_msgs;
+
+struct Joy {
+    int32_t axes_length;
+    int32_t buttons_length;
+    std_msgs.Header header;
+    float axes[axes_length];
+    int32_t buttons[buttons_length];
+}

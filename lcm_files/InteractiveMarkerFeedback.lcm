@@ -1,0 +1,20 @@
+package visualization_msgs;
+
+struct InteractiveMarkerFeedback {
+    const int8_t KEEP_ALIVE = 0;
+    const int8_t POSE_UPDATE = 1;
+    const int8_t MENU_SELECT = 2;
+    const int8_t BUTTON_CLICK = 3;
+    const int8_t MOUSE_DOWN = 4;
+    const int8_t MOUSE_UP = 5;
+
+    std_msgs.Header header;
+    string client_id;
+    string marker_name;
+    string control_name;
+    byte event_type;
+    geometry_msgs.Pose pose;
+    int32_t menu_entry_id;
+    geometry_msgs.Point mouse_point;
+    boolean mouse_point_valid;
+}

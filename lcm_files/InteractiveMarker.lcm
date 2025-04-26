@@ -1,0 +1,13 @@
+package visualization_msgs;
+
+struct InteractiveMarker {
+    int32_t menu_entries_length;
+    int32_t controls_length;
+    std_msgs.Header header;
+    geometry_msgs.Pose pose;
+    string name;
+    string description;
+    float scale;
+    MenuEntry menu_entries[menu_entries_length];
+    InteractiveMarkerControl controls[controls_length];
+}

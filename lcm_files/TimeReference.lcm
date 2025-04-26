@@ -1,0 +1,7 @@
+package sensor_msgs;
+
+struct TimeReference {
+    std_msgs.Header header;
+    int64_t time_ref;
+    string source;
+}

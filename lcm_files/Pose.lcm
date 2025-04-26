@@ -1,0 +1,6 @@
+package geometry_msgs;
+
+struct Pose {
+    Point position;
+    Quaternion orientation;
+}

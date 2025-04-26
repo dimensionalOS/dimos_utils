@@ -1,0 +1,13 @@
+package sensor_msgs;
+
+struct JointState {
+    int32_t name_length;
+    int32_t position_length;
+    int32_t velocity_length;
+    int32_t effort_length;
+    std_msgs.Header header;
+    string name[name_length];
+    double position[position_length];
+    double velocity[velocity_length];
+    double effort[effort_length];
+}

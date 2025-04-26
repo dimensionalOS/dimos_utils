@@ -1,0 +1,5 @@
+package std_msgs;
+
+struct String {
+    string data;
+}

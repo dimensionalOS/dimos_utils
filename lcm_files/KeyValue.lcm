@@ -1,0 +1,6 @@
+package diagnostic_msgs;
+
+struct KeyValue {
+    string key;
+    string value;
+}

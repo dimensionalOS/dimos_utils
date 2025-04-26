@@ -1,0 +1,15 @@
+package foxglove_msgs;
+
+struct Grid {
+    int32_t fields_length;
+    int32_t data_length;
+    builtin_interfaces.Time timestamp;
+    string frame_id;
+    geometry_msgs.Pose pose;
+    int32_t column_count;
+    foxglove_msgs.Vector2 cell_size;
+    int32_t row_stride;
+    int32_t cell_stride;
+    foxglove_msgs.PackedElementField fields[fields_length];
+    byte data[data_length];
+}

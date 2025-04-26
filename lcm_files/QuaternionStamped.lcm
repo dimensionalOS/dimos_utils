@@ -1,0 +1,6 @@
+package geometry_msgs;
+
+struct QuaternionStamped {
+    std_msgs.Header header;
+    Quaternion quaternion;
+}

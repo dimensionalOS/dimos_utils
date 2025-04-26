@@ -1,0 +1,10 @@
+package foxglove_msgs;
+
+struct TextAnnotation {
+    builtin_interfaces.Time timestamp;
+    foxglove_msgs.Point2 position;
+    string text;
+    double font_size;
+    foxglove_msgs.Color text_color;
+    foxglove_msgs.Color background_color;
+}

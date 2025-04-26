@@ -1,0 +1,12 @@
+package foxglove_msgs;
+
+struct TriangleListPrimitive {
+    int32_t points_length;
+    int32_t colors_length;
+    int32_t indices_length;
+    geometry_msgs.Pose pose;
+    geometry_msgs.Point points[points_length];
+    foxglove_msgs.Color color;
+    foxglove_msgs.Color colors[colors_length];
+    int32_t indices[indices_length];
+}

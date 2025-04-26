@@ -1,0 +1,8 @@
+package std_msgs;
+
+struct ColorRGBA {
+    float r;
+    float g;
+    float b;
+    float a;
+}

@@ -1,0 +1,6 @@
+package sensor_msgs;
+
+struct LaserEcho {
+    int32_t echoes_length;
+    float echoes[echoes_length];
+}

@@ -1,0 +1,6 @@
+package actionlib_msgs;
+
+struct GoalID {
+    int64_t stamp;
+    string id;
+}

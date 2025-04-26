@@ -1,0 +1,27 @@
+package foxglove_msgs;
+
+struct SceneEntity {
+    int32_t metadata_length;
+    int32_t arrows_length;
+    int32_t cubes_length;
+    int32_t spheres_length;
+    int32_t cylinders_length;
+    int32_t lines_length;
+    int32_t triangles_length;
+    int32_t texts_length;
+    int32_t models_length;
+    builtin_interfaces.Time timestamp;
+    string frame_id;
+    string id;
+    builtin_interfaces.Duration lifetime;
+    boolean frame_locked;
+    foxglove_msgs.KeyValuePair metadata[metadata_length];
+    foxglove_msgs.ArrowPrimitive arrows[arrows_length];
+    foxglove_msgs.CubePrimitive cubes[cubes_length];
+    foxglove_msgs.SpherePrimitive spheres[spheres_length];
+    foxglove_msgs.CylinderPrimitive cylinders[cylinders_length];
+    foxglove_msgs.LinePrimitive lines[lines_length];
+    foxglove_msgs.TriangleListPrimitive triangles[triangles_length];
+    foxglove_msgs.TextPrimitive texts[texts_length];
+    foxglove_msgs.ModelPrimitive models[models_length];
+}

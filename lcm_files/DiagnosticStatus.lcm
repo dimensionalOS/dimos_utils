@@ -1,0 +1,15 @@
+package diagnostic_msgs;
+
+struct DiagnosticStatus {
+    const int8_t OK = 0;
+    const int8_t WARN = 1;
+    const int8_t ERROR = 2;
+    const int8_t STALE = 3;
+
+    int32_t values_length;
+    int8_t level;
+    string name;
+    string message;
+    string hardware_id;
+    KeyValue values[values_length];
+}

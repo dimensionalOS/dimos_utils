@@ -1,0 +1,9 @@
+package foxglove_msgs;
+
+struct CylinderPrimitive {
+    geometry_msgs.Pose pose;
+    geometry_msgs.Vector3 size;
+    double bottom_scale;
+    double top_scale;
+    foxglove_msgs.Color color;
+}

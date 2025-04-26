@@ -1,0 +1,6 @@
+package foxglove_msgs;
+
+struct FrameTransforms {
+    int32_t transforms_length;
+    foxglove_msgs.FrameTransform transforms[transforms_length];
+}

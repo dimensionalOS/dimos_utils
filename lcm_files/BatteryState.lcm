@@ -1,0 +1,44 @@
+package sensor_msgs;
+
+struct BatteryState {
+    const int8_t POWER_SUPPLY_STATUS_UNKNOWN = 0;
+    const int8_t POWER_SUPPLY_STATUS_CHARGING = 1;
+    const int8_t POWER_SUPPLY_STATUS_DISCHARGING = 2;
+    const int8_t POWER_SUPPLY_STATUS_NOT_CHARGING = 3;
+    const int8_t POWER_SUPPLY_STATUS_FULL = 4;
+    const int8_t POWER_SUPPLY_HEALTH_UNKNOWN = 0;
+    const int8_t POWER_SUPPLY_HEALTH_GOOD = 1;
+    const int8_t POWER_SUPPLY_HEALTH_OVERHEAT = 2;
+    const int8_t POWER_SUPPLY_HEALTH_DEAD = 3;
+    const int8_t POWER_SUPPLY_HEALTH_OVERVOLTAGE = 4;
+    const int8_t POWER_SUPPLY_HEALTH_UNSPEC_FAILURE = 5;
+    const int8_t POWER_SUPPLY_HEALTH_COLD = 6;
+    const int8_t POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE = 7;
+    const int8_t POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE = 8;
+    const int8_t POWER_SUPPLY_TECHNOLOGY_UNKNOWN = 0;
+    const int8_t POWER_SUPPLY_TECHNOLOGY_NIMH = 1;
+    const int8_t POWER_SUPPLY_TECHNOLOGY_LION = 2;
+    const int8_t POWER_SUPPLY_TECHNOLOGY_LIPO = 3;
+    const int8_t POWER_SUPPLY_TECHNOLOGY_LIFE = 4;
+    const int8_t POWER_SUPPLY_TECHNOLOGY_NICD = 5;
+    const int8_t POWER_SUPPLY_TECHNOLOGY_LIMN = 6;
+
+    int32_t cell_voltage_length;
+    int32_t cell_temperature_length;
+    std_msgs.Header header;
+    float voltage;
+    float temperature;
+    float current;
+    float charge;
+    float capacity;
+    float design_capacity;
+    float percentage;
+    byte power_supply_status;
+    byte power_supply_health;
+    byte power_supply_technology;
+    boolean present;
+    float cell_voltage[cell_voltage_length];
+    float cell_temperature[cell_temperature_length];
+    string location;
+    string serial_number;
+}

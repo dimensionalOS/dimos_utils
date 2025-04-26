@@ -1,0 +1,5 @@
+package std_msgs;
+
+struct Float64 {
+    double data;
+}

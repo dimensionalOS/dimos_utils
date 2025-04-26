@@ -1,0 +1,6 @@
+package geometry_msgs;
+
+struct TwistStamped {
+    std_msgs.Header header;
+    Twist twist;
+}

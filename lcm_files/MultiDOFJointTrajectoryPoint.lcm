@@ -1,0 +1,11 @@
+package trajectory_msgs;
+
+struct MultiDOFJointTrajectoryPoint {
+    int32_t transforms_length;
+    int32_t velocities_length;
+    int32_t accelerations_length;
+    geometry_msgs.Transform transforms[transforms_length];
+    geometry_msgs.Twist velocities[velocities_length];
+    geometry_msgs.Twist accelerations[accelerations_length];
+    int64_t time_from_start;
+}

@@ -1,0 +1,10 @@
+package foxglove_msgs;
+
+struct ImageAnnotations {
+    int32_t circles_length;
+    int32_t points_length;
+    int32_t texts_length;
+    foxglove_msgs.CircleAnnotation circles[circles_length];
+    foxglove_msgs.PointsAnnotation points[points_length];
+    foxglove_msgs.TextAnnotation texts[texts_length];
+}

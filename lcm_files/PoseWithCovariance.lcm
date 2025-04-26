@@ -1,0 +1,6 @@
+package geometry_msgs;
+
+struct PoseWithCovariance {
+    Pose pose;
+    double covariance[36];
+}

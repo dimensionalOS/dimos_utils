@@ -1,0 +1,7 @@
+package nav_msgs;
+
+struct Path {
+    int32_t poses_length;
+    std_msgs.Header header;
+    geometry_msgs.PoseStamped poses[poses_length];
+}

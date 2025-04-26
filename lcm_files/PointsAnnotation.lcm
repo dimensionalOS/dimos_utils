@@ -1,0 +1,19 @@
+package foxglove_msgs;
+
+struct PointsAnnotation {
+    const int8_t UNKNOWN = 0;
+    const int8_t POINTS = 1;
+    const int8_t LINE_LOOP = 2;
+    const int8_t LINE_STRIP = 3;
+    const int8_t LINE_LIST = 4;
+
+    int32_t points_length;
+    int32_t outline_colors_length;
+    builtin_interfaces.Time timestamp;
+    byte type;
+    foxglove_msgs.Point2 points[points_length];
+    foxglove_msgs.Color outline_color;
+    foxglove_msgs.Color outline_colors[outline_colors_length];
+    foxglove_msgs.Color fill_color;
+    double thickness;
+}

@@ -1,0 +1,6 @@
+package builtin_interfaces;
+
+struct Duration {
+    int32_t sec;
+    int32_t nanosec;
+}

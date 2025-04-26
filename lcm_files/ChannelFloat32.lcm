@@ -1,0 +1,7 @@
+package sensor_msgs;
+
+struct ChannelFloat32 {
+    int32_t values_length;
+    string name;
+    float values[values_length];
+}

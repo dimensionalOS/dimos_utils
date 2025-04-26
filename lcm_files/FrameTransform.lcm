@@ -1,0 +1,9 @@
+package foxglove_msgs;
+
+struct FrameTransform {
+    builtin_interfaces.Time timestamp;
+    string parent_frame_id;
+    string child_frame_id;
+    geometry_msgs.Vector3 translation;
+    geometry_msgs.Quaternion rotation;
+}

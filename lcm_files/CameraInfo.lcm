@@ -1,0 +1,16 @@
+package sensor_msgs;
+
+struct CameraInfo {
+    int32_t D_length;
+    std_msgs.Header header;
+    int32_t height;
+    int32_t width;
+    string distortion_model;
+    double D[D_length];
+    double K[9];
+    double R[9];
+    double P[12];
+    int32_t binning_x;
+    int32_t binning_y;
+    RegionOfInterest roi;
+}

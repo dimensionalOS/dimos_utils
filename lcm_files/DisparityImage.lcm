@@ -1,0 +1,12 @@
+package stereo_msgs;
+
+struct DisparityImage {
+    std_msgs.Header header;
+    sensor_msgs.Image image;
+    float f;
+    float T;
+    sensor_msgs.RegionOfInterest valid_window;
+    float min_disparity;
+    float max_disparity;
+    float delta_d;
+}

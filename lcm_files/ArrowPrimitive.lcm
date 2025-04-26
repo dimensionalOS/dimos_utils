@@ -1,0 +1,10 @@
+package foxglove_msgs;
+
+struct ArrowPrimitive {
+    geometry_msgs.Pose pose;
+    double shaft_length;
+    double shaft_diameter;
+    double head_length;
+    double head_diameter;
+    foxglove_msgs.Color color;
+}

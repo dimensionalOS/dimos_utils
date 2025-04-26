@@ -1,0 +1,5 @@
+package std_msgs;
+
+struct Byte {
+    int8_t data;
+}

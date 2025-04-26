@@ -1,0 +1,19 @@
+package foxglove_msgs;
+
+struct LinePrimitive {
+    const int8_t LINE_STRIP = 0;
+    const int8_t LINE_LOOP = 1;
+    const int8_t LINE_LIST = 2;
+
+    int32_t points_length;
+    int32_t colors_length;
+    int32_t indices_length;
+    byte type;
+    geometry_msgs.Pose pose;
+    double thickness;
+    boolean scale_invariant;
+    geometry_msgs.Point points[points_length];
+    foxglove_msgs.Color color;
+    foxglove_msgs.Color colors[colors_length];
+    int32_t indices[indices_length];
+}

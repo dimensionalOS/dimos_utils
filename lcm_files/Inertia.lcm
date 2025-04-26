@@ -1,0 +1,12 @@
+package geometry_msgs;
+
+struct Inertia {
+    double m;
+    geometry_msgs.Vector3 com;
+    double ixx;
+    double ixy;
+    double ixz;
+    double iyy;
+    double iyz;
+    double izz;
+}

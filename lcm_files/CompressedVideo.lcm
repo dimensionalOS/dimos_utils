@@ -1,0 +1,9 @@
+package foxglove_msgs;
+
+struct CompressedVideo {
+    int32_t data_length;
+    builtin_interfaces.Time timestamp;
+    string frame_id;
+    byte data[data_length];
+    string format;
+}

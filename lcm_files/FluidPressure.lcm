@@ -1,0 +1,7 @@
+package sensor_msgs;
+
+struct FluidPressure {
+    std_msgs.Header header;
+    double fluid_pressure;
+    double variance;
+}

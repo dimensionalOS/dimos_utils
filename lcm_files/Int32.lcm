@@ -1,0 +1,5 @@
+package std_msgs;
+
+struct Int32 {
+    int32_t data;
+}

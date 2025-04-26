@@ -1,0 +1,12 @@
+package foxglove_msgs;
+
+struct ModelPrimitive {
+    int32_t data_length;
+    geometry_msgs.Pose pose;
+    geometry_msgs.Vector3 scale;
+    foxglove_msgs.Color color;
+    boolean override_color;
+    string url;
+    string media_type;
+    byte data[data_length];
+}

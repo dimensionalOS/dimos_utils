@@ -1,0 +1,7 @@
+package sensor_msgs;
+
+struct RelativeHumidity {
+    std_msgs.Header header;
+    double relative_humidity;
+    double variance;
+}

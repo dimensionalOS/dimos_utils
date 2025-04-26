@@ -1,0 +1,8 @@
+package shape_msgs;
+
+struct Mesh {
+    int32_t triangles_length;
+    int32_t vertices_length;
+    MeshTriangle triangles[triangles_length];
+    geometry_msgs.Point vertices[vertices_length];
+}

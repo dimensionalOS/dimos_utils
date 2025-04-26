@@ -1,0 +1,5 @@
+package shape_msgs;
+
+struct Plane {
+    double coef[4];
+}

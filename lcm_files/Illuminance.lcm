@@ -1,0 +1,7 @@
+package sensor_msgs;
+
+struct Illuminance {
+    std_msgs.Header header;
+    double illuminance;
+    double variance;
+}

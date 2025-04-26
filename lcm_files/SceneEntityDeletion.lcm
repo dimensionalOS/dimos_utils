@@ -1,0 +1,10 @@
+package foxglove_msgs;
+
+struct SceneEntityDeletion {
+    const int8_t MATCHING_ID = 0;
+    const int8_t ALL = 1;
+
+    builtin_interfaces.Time timestamp;
+    byte type;
+    string id;
+}

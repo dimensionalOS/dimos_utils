@@ -1,0 +1,8 @@
+package foxglove_msgs;
+
+struct SceneUpdate {
+    int32_t deletions_length;
+    int32_t entities_length;
+    foxglove_msgs.SceneEntityDeletion deletions[deletions_length];
+    foxglove_msgs.SceneEntity entities[entities_length];
+}

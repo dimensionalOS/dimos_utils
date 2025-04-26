@@ -1,0 +1,6 @@
+package geometry_msgs;
+
+struct PolygonStamped {
+    std_msgs.Header header;
+    Polygon polygon;
+}

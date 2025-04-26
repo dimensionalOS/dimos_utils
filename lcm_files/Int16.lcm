@@ -1,0 +1,5 @@
+package std_msgs;
+
+struct Int16 {
+    int16_t data;
+}

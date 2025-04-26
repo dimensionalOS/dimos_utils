@@ -1,0 +1,6 @@
+package geometry_msgs;
+
+struct PoseStamped {
+    std_msgs.Header header;
+    Pose pose;
+}

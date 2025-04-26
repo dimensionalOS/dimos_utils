@@ -1,0 +1,7 @@
+package foxglove_msgs;
+
+struct SpherePrimitive {
+    geometry_msgs.Pose pose;
+    geometry_msgs.Vector3 size;
+    foxglove_msgs.Color color;
+}

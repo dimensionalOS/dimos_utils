@@ -1,0 +1,6 @@
+package foxglove_msgs;
+
+struct Point2 {
+    double x;
+    double y;
+}

@@ -1,0 +1,13 @@
+package sensor_msgs;
+
+struct Range {
+    const int8_t ULTRASOUND = 0;
+    const int8_t INFRARED = 1;
+
+    std_msgs.Header header;
+    byte radiation_type;
+    float field_of_view;
+    float min_range;
+    float max_range;
+    float range;
+}

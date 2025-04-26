@@ -1,0 +1,10 @@
+package foxglove_msgs;
+
+struct TextPrimitive {
+    geometry_msgs.Pose pose;
+    boolean billboard;
+    double font_size;
+    boolean scale_invariant;
+    foxglove_msgs.Color color;
+    string text;
+}

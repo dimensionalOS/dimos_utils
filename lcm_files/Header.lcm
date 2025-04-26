@@ -1,0 +1,7 @@
+package std_msgs;
+
+struct Header {
+    int32_t seq;
+    int64_t stamp;
+    string frame_id;
+}

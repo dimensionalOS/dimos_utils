@@ -1,0 +1,6 @@
+package geometry_msgs;
+
+struct Transform {
+    Vector3 translation;
+    Quaternion rotation;
+}

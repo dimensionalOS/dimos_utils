@@ -1,0 +1,15 @@
+package sensor_msgs;
+
+struct NavSatStatus {
+    const int8_t STATUS_NO_FIX = -1;
+    const int8_t STATUS_FIX = 0;
+    const int8_t STATUS_SBAS_FIX = 1;
+    const int8_t STATUS_GBAS_FIX = 2;
+    const int16_t SERVICE_GPS = 1;
+    const int16_t SERVICE_GLONASS = 2;
+    const int16_t SERVICE_COMPASS = 4;
+    const int16_t SERVICE_GALILEO = 8;
+
+    int8_t status;
+    int16_t service;
+}

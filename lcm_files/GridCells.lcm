@@ -1,0 +1,9 @@
+package nav_msgs;
+
+struct GridCells {
+    int32_t cells_length;
+    std_msgs.Header header;
+    float cell_width;
+    float cell_height;
+    geometry_msgs.Point cells[cells_length];
+}

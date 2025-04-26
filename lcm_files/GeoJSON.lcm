@@ -1,0 +1,5 @@
+package foxglove_msgs;
+
+struct GeoJSON {
+    string geojson;
+}

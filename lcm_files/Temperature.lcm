@@ -1,0 +1,7 @@
+package sensor_msgs;
+
+struct Temperature {
+    std_msgs.Header header;
+    double temperature;
+    double variance;
+}

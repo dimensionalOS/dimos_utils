@@ -1,0 +1,9 @@
+package sensor_msgs;
+
+struct RegionOfInterest {
+    int32_t x_offset;
+    int32_t y_offset;
+    int32_t height;
+    int32_t width;
+    boolean do_rectify;
+}

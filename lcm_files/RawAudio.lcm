@@ -1,0 +1,10 @@
+package foxglove_msgs;
+
+struct RawAudio {
+    int32_t data_length;
+    builtin_interfaces.Time timestamp;
+    byte data[data_length];
+    string format;
+    int32_t sample_rate;
+    int32_t number_of_channels;
+}

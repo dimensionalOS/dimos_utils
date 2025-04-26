@@ -1,0 +1,13 @@
+package trajectory_msgs;
+
+struct JointTrajectoryPoint {
+    int32_t positions_length;
+    int32_t velocities_length;
+    int32_t accelerations_length;
+    int32_t effort_length;
+    double positions[positions_length];
+    double velocities[velocities_length];
+    double accelerations[accelerations_length];
+    double effort[effort_length];
+    int64_t time_from_start;
+}

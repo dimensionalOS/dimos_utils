@@ -1,0 +1,6 @@
+package foxglove_msgs;
+
+struct KeyValuePair {
+    string key;
+    string value;
+}

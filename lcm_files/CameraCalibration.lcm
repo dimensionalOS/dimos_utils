@@ -1,0 +1,14 @@
+package foxglove_msgs;
+
+struct CameraCalibration {
+    int32_t d_length;
+    builtin_interfaces.Time timestamp;
+    string frame_id;
+    int32_t width;
+    int32_t height;
+    string distortion_model;
+    double d[d_length];
+    double k[9];
+    double r[9];
+    double p[12];
+}

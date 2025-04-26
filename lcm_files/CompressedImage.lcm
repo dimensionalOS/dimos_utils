@@ -1,0 +1,8 @@
+package sensor_msgs;
+
+struct CompressedImage {
+    int32_t data_length;
+    std_msgs.Header header;
+    string format;
+    byte data[data_length];
+}
