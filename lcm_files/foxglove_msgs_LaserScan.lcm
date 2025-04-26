@@ -1,0 +1,13 @@
+package foxglove_msgs;
+
+struct LaserScan {
+    int32_t ranges_length;
+    int32_t intensities_length;
+    builtin_interfaces.Time timestamp;
+    string frame_id;
+    geometry_msgs.Pose pose;
+    double start_angle;
+    double end_angle;
+    double ranges[ranges_length];
+    double intensities[intensities_length];
+}

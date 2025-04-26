@@ -1,0 +1,12 @@
+package foxglove_msgs;
+
+struct PointCloud {
+    int32_t fields_length;
+    int32_t data_length;
+    builtin_interfaces.Time timestamp;
+    string frame_id;
+    geometry_msgs.Pose pose;
+    int32_t point_stride;
+    foxglove_msgs.PackedElementField fields[fields_length];
+    byte data[data_length];
+}

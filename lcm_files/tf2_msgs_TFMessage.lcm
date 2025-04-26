@@ -1,0 +1,6 @@
+package tf2_msgs;
+
+struct TFMessage {
+    int32_t transforms_length;
+    geometry_msgs.TransformStamped transforms[transforms_length];
+}

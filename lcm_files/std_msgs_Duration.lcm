@@ -1,0 +1,5 @@
+package std_msgs;
+
+struct Duration {
+    int64_t data;
+}

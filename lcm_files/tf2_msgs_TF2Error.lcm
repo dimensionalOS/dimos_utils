@@ -1,0 +1,14 @@
+package tf2_msgs;
+
+struct TF2Error {
+    const int8_t NO_ERROR = 0;
+    const int8_t LOOKUP_ERROR = 1;
+    const int8_t CONNECTIVITY_ERROR = 2;
+    const int8_t EXTRAPOLATION_ERROR = 3;
+    const int8_t INVALID_ARGUMENT_ERROR = 4;
+    const int8_t TIMEOUT_ERROR = 5;
+    const int8_t TRANSFORM_ERROR = 6;
+
+    byte error;
+    string error_string;
+}

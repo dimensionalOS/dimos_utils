@@ -387,12 +387,12 @@ def convert_ros_msg_to_lcm(ros_msg_path, output_dir=None, converted_types=None, 
     
     lcm_content_str = "\n".join(lcm_content)
     
-    # Write to output file
+    # Write to output file - use package_name as prefix to avoid name collisions
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
-        output_path = os.path.join(output_dir, f"{type_name}.lcm")
+        output_path = os.path.join(output_dir, f"{package_name}_{type_name}.lcm")
     else:
-        output_path = f"{type_name}.lcm"
+        output_path = f"{package_name}_{type_name}.lcm"
         
     with open(output_path, 'w') as f:
         f.write(lcm_content_str)
@@ -404,8 +404,10 @@ def convert_ros_msg_to_lcm(ros_msg_path, output_dir=None, converted_types=None, 
         if dep not in converted_types and dep not in conversion_queue:
             conversion_queue.append(dep)
     
-    # Mark this type as converted
+    # Mark this type as converted - use the namespaced filename format
     converted_types[type_key] = output_path
+    # Also add an entry for just the type name for backward compatibility
+    converted_types[type_name] = output_path
     
     return output_path, dependencies
 

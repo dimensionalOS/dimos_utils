@@ -1,0 +1,5 @@
+package std_msgs;
+
+struct Time {
+    int64_t data;
+}

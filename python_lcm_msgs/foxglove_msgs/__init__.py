@@ -36,3 +36,6 @@ from .RawAudio import RawAudio as RawAudio
 from .CubePrimitive import CubePrimitive as CubePrimitive
 from .ArrowPrimitive import ArrowPrimitive as ArrowPrimitive
 from .SpherePrimitive import SpherePrimitive as SpherePrimitive
+from .LaserScan import LaserScan as LaserScan
+from .CompressedImage import CompressedImage as CompressedImage
+from .PointCloud import PointCloud as PointCloud
