@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="alfred_wheels_ros2_control" params="mock_hardware:=true">
+
+        <xacro:if value="${mock_hardware}">
+            <ros2_control name="alfred_wheels" type="system">
+                <hardware>
+                    <plugin>mock_components/GenericSystem</plugin>
+                    <param name="calculate_dynamics">true</param>
+                </hardware>
+                <joint name="left_wheel_joint">
+                    <command_interface name="velocity"/>
+                    <state_interface name="position">
+                        <param name="initial_value">0.0</param>
+                    </state_interface>
+                    <state_interface name="velocity">
+                        <param name="initial_value">0.0</param>
+                    </state_interface>
+                </joint>
+                <joint name="right_wheel_joint">
+                    <command_interface name="velocity"/>
+                    <state_interface name="position">
+                        <param name="initial_value">0.0</param>
+                    </state_interface>
+                    <state_interface name="velocity">
+                        <param name="initial_value">0.0</param>
+                    </state_interface>
+                </joint>
+            </ros2_control>
+        </xacro:if>
+
+        <xacro:unless value="${mock_hardware}">
+            <ros2_control name="alfred_wheels" type="system">
+                <hardware>
+                    <plugin>topic_based_ros2_control/TopicBasedSystem</plugin>
+                    <param name="joint_commands_topic">/alfred_wheels_commands</param>
+                    <param name="joint_states_topic">/alfred_wheels_states</param>
+                </hardware>
+                <joint name="left_wheel_joint">
+                    <command_interface name="velocity"/>
+                    <state_interface name="position">
+                        <param name="initial_value">0.0</param>
+                    </state_interface>
+                    <state_interface name="velocity">
+                        <param name="initial_value">0.0</param>
+                    </state_interface>
+                </joint>
+                <joint name="right_wheel_joint">
+                    <command_interface name="velocity"/>
+                    <state_interface name="position">
+                        <param name="initial_value">0.0</param>
+                    </state_interface>
+                    <state_interface name="velocity">
+                        <param name="initial_value">0.0</param>
+                    </state_interface>
+                </joint>
+            </ros2_control>
+        </xacro:unless>
+
+    </xacro:macro>
+
+</robot>

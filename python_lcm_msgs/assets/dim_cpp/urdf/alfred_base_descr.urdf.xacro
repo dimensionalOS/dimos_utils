@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<robot name="alfred_base_descr" xmlns:xacro="http://ros.org/wiki/xacro">
+	<xacro:arg name="base_frame" default="world"/>
+
+	<xacro:arg name="prefix_1" default="L_"/>
+	<xacro:arg name="prefix_2" default="R_"/>
+	<xacro:arg name="hw_ns" default="xarm"/>
+	<xacro:arg name="limited" default="false"/>
+	<xacro:arg name="effort_control" default="false"/>
+	<xacro:arg name="velocity_control" default="false"/>
+	<xacro:arg name="add_gripper_1" default="false"/>
+	<xacro:arg name="add_gripper_2" default="false"/>
+	<xacro:arg name="add_vacuum_gripper_1" default="false"/>
+	<xacro:arg name="add_vacuum_gripper_2" default="false"/>
+	<xacro:arg name="add_bio_gripper_1" default="false"/>
+	<xacro:arg name="add_bio_gripper_2" default="false"/>
+	<xacro:arg name="model1300_1" default="false"/>
+	<xacro:arg name="model1300_2" default="false"/>
+
+	<xacro:arg name="dof_1" default="6"/>
+	<xacro:arg name="dof_2" default="7"/>
+	<xacro:arg name="robot_ip_1" default=""/>
+	<xacro:arg name="robot_ip_2" default=""/>
+	<xacro:arg name="robot_type_1" default="xarm"/>
+	<xacro:arg name="robot_type_2" default="xarm"/>
+	<xacro:arg name="robot_sn_1" default=""/>
+	<xacro:arg name="robot_sn_2" default=""/>
+	<xacro:arg name="report_type_1" default="normal"/>
+	<xacro:arg name="report_type_2" default="normal"/>
+
+	<xacro:arg name="ros2_control_plugin" default="uf_robot_hardware/UFFakeRobotSystemHardware"/>
+	<xacro:arg name="ros2_control_params" default=""/>
+
+	<xacro:arg name="add_realsense_d435i_1" default="false"/>
+	<xacro:arg name="add_realsense_d435i_2" default="false"/>
+	<xacro:arg name="add_d435i_links_1" default="true"/>
+	<xacro:arg name="add_d435i_links_2" default="true"/>
+
+	<xacro:arg name="add_other_geometry_1" default="false"/>
+	<xacro:arg name="geometry_type_1" default="box"/>
+	<xacro:arg name="geometry_mass_1" default="0.1"/>
+	<xacro:arg name="geometry_height_1" default="0.1"/>
+	<xacro:arg name="geometry_radius_1" default="0.1"/>
+	<xacro:arg name="geometry_length_1" default="0.1"/>
+	<xacro:arg name="geometry_width_1" default="0.1"/>
+	<xacro:arg name="geometry_mesh_filename_1" default=""/>
+	<xacro:arg name="geometry_mesh_origin_xyz_1" default="0 0 0"/>
+	<xacro:arg name="geometry_mesh_origin_rpy_1" default="0 0 0"/>
+	<xacro:arg name="geometry_mesh_tcp_xyz_1" default="0 0 0"/>
+	<xacro:arg name="geometry_mesh_tcp_rpy_1" default="0 0 0"/>
+
+	<xacro:arg name="add_other_geometry_2" default="false"/>
+	<xacro:arg name="geometry_type_2" default="box"/>
+	<xacro:arg name="geometry_mass_2" default="0.1"/>
+	<xacro:arg name="geometry_height_2" default="0.1"/>
+	<xacro:arg name="geometry_radius_2" default="0.1"/>
+	<xacro:arg name="geometry_length_2" default="0.1"/>
+	<xacro:arg name="geometry_width_2" default="0.1"/>
+	<xacro:arg name="geometry_mesh_filename_2" default=""/>
+	<xacro:arg name="geometry_mesh_origin_xyz_2" default="0 0 0"/>
+	<xacro:arg name="geometry_mesh_origin_rpy_2" default="0 0 0"/>
+	<xacro:arg name="geometry_mesh_tcp_xyz_2" default="0 0 0"/>
+	<xacro:arg name="geometry_mesh_tcp_rpy_2" default="0 0 0"/>
+
+	<xacro:arg name="baud_checkset_1" default="true"/>
+	<xacro:arg name="baud_checkset_2" default="true"/>
+	<xacro:arg name="default_gripper_baud_1" default="2000000"/>
+	<xacro:arg name="default_gripper_baud_2" default="2000000"/>
+
+	<xacro:arg name="mesh_suffix" default="stl"/>
+
+	<xacro:arg name="kinematics_suffix_1" default=""/>
+	<xacro:arg name="kinematics_suffix_2" default=""/>
+
+	<xacro:include filename="$(find dim_cpp)/urdf/include/alfred_base.urdf.xacro" />
+	<xacro:include filename="$(find dim_cpp)/urdf/include/alfred_gripper.urdf.xacro" />
+
+	<link name="$(arg base_frame)" />
+	<xacro:alfred_base base_frame="$(arg base_frame)" base_pos_x="0.0" base_pos_y="0.0" base_pos_z="0.0" base_roll="0.0" base_pitch="0.0" base_yaw="0.0" r="0.8" g="0.8" b="0.8" a="1.0" />
+
+	<xacro:include filename="$(find depthai_descriptions)/urdf/include/depthai_macro.urdf.xacro" />
+
+	<xacro:depthai_camera camera_name="head_cam" parent="head_cam_link"
+		camera_model="OAK-D-PRO" base_frame="head_cam_frame"
+		cam_pos_x="0" cam_pos_y="-0.022921" cam_pos_z="0.004764"
+		cam_roll="0" cam_pitch="0" cam_yaw="-1.5707963267948966" />
+
+	<xacro:depthai_camera camera_name="chest_cam" parent="chest_cam_link"
+		camera_model="OAK-D-PRO" base_frame="chest_cam_frame"
+		cam_pos_x="0" cam_pos_y="-0.022921" cam_pos_z="-0.004764"
+		cam_roll="3.14159265" cam_pitch="0" cam_yaw="-1.5707963267948966" />
+
+	<!-- load xarm6 device -->
+	<xacro:include filename="$(find xarm_description)/urdf/xarm_device_macro.xacro" />
+
+	<xacro:xarm_device prefix="$(arg prefix_1)" hw_ns="$(arg hw_ns)" limited="$(arg limited)" 
+		effort_control="$(arg effort_control)" velocity_control="$(arg velocity_control)"
+		add_gripper="$(arg add_gripper_1)" add_vacuum_gripper="$(arg add_vacuum_gripper_1)" 
+		add_bio_gripper="$(arg add_bio_gripper_1)" dof="$(arg dof_1)"
+		ros2_control_plugin="$(arg ros2_control_plugin)" robot_type="$(arg robot_type_1)"
+		load_gazebo_plugin="false" ros2_control_params="$(arg ros2_control_params)"
+		attach_to="left_arm_mount" attach_xyz="0 0 0" attach_rpy="0 0 0"
+		add_realsense_d435i="$(arg add_realsense_d435i_1)" 
+		add_d435i_links="$(arg add_d435i_links_1)" 
+		add_other_geometry="$(arg add_other_geometry_1)" 
+		geometry_type="$(arg geometry_type_1)" geometry_mass="$(arg geometry_mass_1)"
+		geometry_height="$(arg geometry_height_1)" geometry_radius="$(arg geometry_radius_1)"
+		geometry_length="$(arg geometry_length_1)" geometry_width="$(arg geometry_width_1)"
+		geometry_mesh_filename="$(arg geometry_mesh_filename_1)"
+		geometry_mesh_origin_xyz="$(arg geometry_mesh_origin_xyz_1)" geometry_mesh_origin_rpy="$(arg geometry_mesh_origin_rpy_1)"
+		geometry_mesh_tcp_xyz="$(arg geometry_mesh_tcp_xyz_1)" geometry_mesh_tcp_rpy="$(arg geometry_mesh_tcp_rpy_1)"
+		robot_ip="$(arg robot_ip_1)" report_type="$(arg report_type_1)"
+		baud_checkset="$(arg baud_checkset_1)" default_gripper_baud="$(arg default_gripper_baud_1)"
+		model1300="$(arg model1300_1)" robot_sn="$(arg robot_sn_1)" mesh_suffix="$(arg mesh_suffix)" kinematics_suffix="$(arg kinematics_suffix_1)" />
+	<xacro:xarm_device prefix="$(arg prefix_2)" hw_ns="$(arg hw_ns)" limited="$(arg limited)" 
+		effort_control="$(arg effort_control)" velocity_control="$(arg velocity_control)"
+		add_gripper="$(arg add_gripper_2)" add_vacuum_gripper="$(arg add_vacuum_gripper_2)" 
+		add_bio_gripper="$(arg add_bio_gripper_2)" dof="$(arg dof_2)"
+		ros2_control_plugin="$(arg ros2_control_plugin)" robot_type="$(arg robot_type_2)"
+		load_gazebo_plugin="true" ros2_control_params="$(arg ros2_control_params)"
+		attach_to="right_arm_mount" attach_xyz="0 0 0" attach_rpy="0 0 0"
+		add_realsense_d435i="$(arg add_realsense_d435i_2)" 
+		add_d435i_links="$(arg add_d435i_links_2)" 
+		add_other_geometry="$(arg add_other_geometry_2)" 
+		geometry_type="$(arg geometry_type_2)" geometry_mass="$(arg geometry_mass_2)"
+		geometry_height="$(arg geometry_height_2)" geometry_radius="$(arg geometry_radius_2)"
+		geometry_length="$(arg geometry_length_2)" geometry_width="$(arg geometry_width_2)"
+		geometry_mesh_filename="$(arg geometry_mesh_filename_2)"
+		geometry_mesh_origin_xyz="$(arg geometry_mesh_origin_xyz_2)" geometry_mesh_origin_rpy="$(arg geometry_mesh_origin_rpy_2)"
+		geometry_mesh_tcp_xyz="$(arg geometry_mesh_tcp_xyz_2)" geometry_mesh_tcp_rpy="$(arg geometry_mesh_tcp_rpy_2)"
+		robot_ip="$(arg robot_ip_2)" report_type="$(arg report_type_2)"
+		baud_checkset="$(arg baud_checkset_2)" default_gripper_baud="$(arg default_gripper_baud_2)"
+		model1300="$(arg model1300_2)" robot_sn="$(arg robot_sn_2)" mesh_suffix="$(arg mesh_suffix)" kinematics_suffix="$(arg kinematics_suffix_2)" />
+	
+	<xacro:alfred_gripper prefix="$(arg prefix_1)" attach_to="L_link_eef" />
+	<xacro:alfred_gripper prefix="$(arg prefix_2)" attach_to="R_link_eef" />
+
+	<xacro:include filename="$(find dim_cpp)/urdf/alfred_wheels_ros2_control.xacro" />
+	<xacro:alfred_wheels_ros2_control mock_hardware="true"/>
+
+	<xacro:include filename="$(find dim_cpp)/urdf/alfred_pan_tilt_ros2_control.xacro" />
+	<xacro:alfred_pan_tilt_ros2_control />
+
+	<xacro:include filename="$(find dim_cpp)/urdf/alfred_pillar_platform_ros2_control.xacro" />
+	<xacro:alfred_pillar_platform_ros2_control />
+
+	<xacro:include filename="$(find dim_cpp)/urdf/alfred_gripper_ros2_control.xacro" />
+	<xacro:alfred_gripper_ros2_control prefix="$(arg prefix_1)" />
+	<xacro:alfred_gripper_ros2_control prefix="$(arg prefix_2)" />
+
+</robot>

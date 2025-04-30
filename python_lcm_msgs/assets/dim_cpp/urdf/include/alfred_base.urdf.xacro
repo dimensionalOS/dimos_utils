@@ -1,0 +1,305 @@
+<?xml version="1.0"?>
+
+<robot name="alfred_base"
+    xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="alfred_base"
+        params="base_frame  base_pos_x base_pos_y base_pos_z  base_roll base_pitch base_yaw prefix:='' r:=0.8 g:=0.8 b:=0.8 a:=1.0 fixed:=false">
+
+        <xacro:property
+            name="file_prefix"
+            value="package://dim_cpp" />
+
+        <link name="base_center" />
+
+        <joint name="base_parent_joint" type="fixed">
+            <parent link="${base_frame}" />
+            <child link="base_center" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+        <link name="alfred_base_link">
+            <visual>
+                <origin xyz="${base_pos_x} ${base_pos_y} ${base_pos_z}" rpy="${base_roll} ${base_pitch} ${base_yaw}" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/base-visual.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="${base_pos_x} ${base_pos_y} ${base_pos_z}" rpy="${base_roll} ${base_pitch} ${base_yaw}" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/base-collision.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+            <inertial>
+                <mass value="45"/>
+                <inertia  ixx="12.732327" ixy="0" ixz="0" iyy="12.513553" iyz="0" izz="1.8057749" />
+                <origin xyz=".225 -.2125 .9125" rpy="0 0 0" />
+            </inertial>
+        </link>
+
+        <joint name="base_center_joint" type="fixed">
+            <parent link="base_center" />
+            <child link="alfred_base_link" />
+            <origin xyz="-0.395 -.2125 .1232" rpy="0 0 1.5707" />
+        </joint>
+
+        <link name="botwheel_right">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/botwheel-visual.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/botwheel-collision.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+            <inertial>
+                <mass value="2.2"/>
+                <inertia  ixx="0.006434956" ixy="0" ixz="0" iyy="0.01074723" iyz="0" izz="0.006435717" />
+            </inertial>
+        </link>
+
+        <xacro:unless value="${fixed}">
+            <joint name="right_wheel_joint" type="continuous">
+                <parent link="alfred_base_link" />
+                <child link="botwheel_right" />
+                <origin xyz="-0.0561 -0.395 -0.0375" rpy="0 0 -1.5707" />
+                <axis xyz="0 1 0" />
+            </joint>
+        </xacro:unless>
+        <xacro:if value="${fixed}">
+            <joint name="right_wheel_joint" type="fixed">
+                <parent link="alfred_base_link" />
+                <child link="botwheel_right" />
+                <origin xyz="-0.0561 -0.395 -0.0375" rpy="0 0 -1.5707" />
+            </joint>
+        </xacro:if>
+
+        <link name="botwheel_left">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/botwheel-visual.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/botwheel-collision.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+            <inertial>
+                <mass value="2.2"/>
+                <inertia  ixx="0.006434956" ixy="0" ixz="0" iyy="0.01074723" iyz="0" izz="0.006435717" />
+            </inertial>
+        </link>
+
+        <xacro:unless value="${fixed}">
+            <joint name="left_wheel_joint" type="continuous">
+                <parent link="alfred_base_link" />
+                <child link="botwheel_left" />
+                <origin xyz="0.5061 -0.395 -0.0375" rpy="0 0 1.5707" />
+                <axis xyz="0 -1 0" />
+            </joint>
+        </xacro:unless>
+        <xacro:if value="${fixed}">
+            <joint name="left_wheel_joint" type="fixed">
+                <parent link="alfred_base_link" />
+                <child link="botwheel_left" />
+                <origin xyz="0.5061 -0.395 -0.0375" rpy="0 0 1.5707" />
+            </joint>
+        </xacro:if>
+
+        <link name="pillar_platform">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/pillarplatform-visual.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/pillarplatform-collision.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+            <inertial>
+                <mass value="1.5"/>
+                <inertia  ixx="0.008729344" ixy="0" ixz="0" iyy="0.0085796565" iyz="0" izz="0.01050275" />
+                <origin xyz=".225 -.365 1.41" rpy="0 0 0" />
+            </inertial>
+        </link>
+
+        <xacro:unless value="${fixed}">
+            <joint name="pillar_platform_joint" type="prismatic">
+                <parent link="alfred_base_link" />
+                <child link="pillar_platform" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <axis xyz="0 0 1" />
+                <limit lower="-0.83" upper="0.0" effort="100" velocity="0.1"/>
+            </joint>
+        </xacro:unless>
+        <xacro:if value="${fixed}">
+            <joint name="pillar_platform_joint" type="fixed">
+                <parent link="alfred_base_link" />
+                <child link="pillar_platform" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
+            </joint>
+        </xacro:if>
+
+        <link name="tilt_base">
+            <visual>
+                <origin xyz="-.225 .365 -1.645" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/tiltbase-visual.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="-.225 .365 -1.645" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/tiltbase-collision.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+            <inertial>
+                <mass value=".15"/>
+                <inertia  ixx="8.479636e-05" ixy="0" ixz="0" iyy="0.00013581244" iyz="0" izz="0.0001717679" />
+            </inertial>
+        </link>
+
+        <xacro:unless value="${fixed}">
+            <joint name="pan_joint" type="revolute">
+                <parent link="alfred_base_link" />
+                <child link="tilt_base" />
+                <origin xyz=".225 -.365 1.645" rpy="0 0 0" />
+                <axis xyz="0 0 1"/>
+                <limit lower="-1.57" upper="1.57" effort="100" velocity="0.1"/>
+            </joint>
+        </xacro:unless>
+        <xacro:if value="${fixed}">
+            <joint name="pan_joint" type="fixed">
+                <parent link="alfred_base_link" />
+                <child link="tilt_base" />
+                <origin xyz=".225 -.365 1.645" rpy="0 0 0" />
+            </joint>
+        </xacro:if>
+
+        <link name="camera_holder" >
+            <visual>
+                <origin xyz="-.225 .365 -1.659" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/cameraholder-visual.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="-.225 .365 -1.659" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/urdf/meshes/cameraholder-collision.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+            <inertial>
+                <mass value=".05"/>
+                <inertia  ixx="3.1757907e-05" ixy="0" ixz="0" iyy="7.106668e-05" iyz="0" izz="4.4024575e-05" />
+                <origin xyz="0 0 .03" rpy="0 0 0" />
+            </inertial>
+        </link>
+        
+        <xacro:unless value="${fixed}">
+            <joint name="tilt_joint" type="revolute">
+                <parent link="tilt_base" />
+                <child link="camera_holder" />
+                <origin xyz="0 0 0.014" rpy="0 0 0" />
+                <axis xyz="1 0 0" />
+                <limit lower="-1.57" upper="1.57" effort="100" velocity="0.1"/>
+            </joint>
+        </xacro:unless>
+        <xacro:if value="${fixed}">
+            <joint name="tilt_joint" type="fixed">
+                <parent link="tilt_base" />
+                <child link="camera_holder" />
+                <origin xyz="0 0 0.014" rpy="0 0 0" />
+            </joint>
+        </xacro:if>
+
+        <link name="head_cam_link" />
+
+        <joint name="head_cam_joint" type="fixed">
+            <parent link="camera_holder" />
+            <child link="head_cam_link" />
+            <origin xyz="0 -0.0025 0.057" rpy="0 0 0" />
+        </joint>
+    
+        <link name="chest_cam_link" />
+
+        <joint name="chest_cam_joint" type="fixed">
+            <parent link="pillar_platform" />
+            <child link="chest_cam_link" />
+            <origin xyz=".225 -.455681 1.441731" rpy="0.78539816 0 0" />
+        </joint>
+
+        <link name="right_arm_mount" />
+
+        <joint name="right_arm_mount_joint" type="fixed">
+            <parent link="pillar_platform" />
+            <child link="right_arm_mount" />
+            <origin xyz=".12325 -.319646 1.4125" rpy="1.57079633 0 -1.57079633" />
+        </joint>
+
+        <link name="left_arm_mount" />
+
+        <joint name="left_arm_mount_joint" type="fixed">
+            <parent link="pillar_platform" />
+            <child link="left_arm_mount" />
+            <origin xyz=".32675 -.319646 1.4125" rpy="1.57079633 3.14159265 1.57079633" />
+        </joint>
+
+        <link name="laser" />
+
+        <joint name="laser_joint" type="fixed">
+            <parent link="alfred_base_link" />
+            <child link="laser" />
+            <origin xyz=".225 .056557 .471777" rpy="0 0 -1.57079633" />
+        </joint>
+    </xacro:macro>
+
+    <!-- <xacro:alfred_base base_frame="world" base_pos_x="0.0" base_pos_y="0.0" base_pos_z="0.0" base_roll="0.0" base_pitch="0.0" base_yaw="0.0" r="0.8" g="0.8" b="0.8" a="1.0" /> -->
+</robot>

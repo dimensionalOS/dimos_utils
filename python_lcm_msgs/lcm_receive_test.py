@@ -1,5 +1,7 @@
 import lcm
 from geometry_msgs import Twist, Vector3
+from sensor_msgs import JointState
+from tf2_msgs import TFMessage
 
 def my_handler(channel, data):
     if channel == "TWIST" or channel == "TWIST2":
@@ -11,6 +13,19 @@ def my_handler(channel, data):
         msg = Vector3.decode(data)
         print("Received message on channel:", channel)
         print("Vector:", msg.x, msg.y, msg.z)
+    elif channel == "joint_states":
+        msg = JointState.decode(data)
+        print("Received message on channel:", channel)
+        print("Joint names:", msg.name)
+        print("Joint positions:", msg.position)
+        print("Joint velocities:", msg.velocity)
+        print("Joint efforts:", msg.effort)
+    elif channel == "tf":
+        msg = TFMessage.decode(data)
+        print("Received message on channel:", channel)
+        print("TF Message:")
+        for transform in msg.transforms:
+            print(transform.header.stamp, transform.header.frame_id, transform.child_frame_id, transform.transform.translation.x, transform.transform.translation.y, transform.transform.translation.z, transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z, transform.transform.rotation.w)
 
 lc = lcm.LCM()
 lc.subscribe(".*", my_handler)
@@ -21,11 +36,9 @@ try:
         lc.handle()
 except KeyboardInterrupt:
     print("Exiting...")
-except lcm.LCMError as e:
-    print("LCM error:", e)
 except Exception as e:
     print("An error occurred:", e)
 finally:
-    lc.unsubscribe("TWIST")
+    lc.unsubscribe(".*")
     print("Unsubscribed from channel.")
     lc.close()

@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+
+<robot name="alfred_gripper"
+    xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="alfred_gripper"
+        params="prefix='' attach_to='link_eef' r:=0.8 g:=0.8 b:=0.8 a:=1.0">
+
+        <link name="${prefix}gripper_base">
+            <visual>
+                <geometry>
+                    <mesh filename="package://dim_cpp/urdf/meshes/alfred_gripper_base-visual.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <mesh filename="package://dim_cpp/urdf/meshes/alfred_gripper_base-collision.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass value="0.5" />
+                <inertia  ixx="0.0003983542873764042" ixy="0" ixz="0" iyy="0.0011773542873764042" iyz="0" izz="0.0012230833333333334" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
+            </inertial>
+        </link>
+
+        <joint name="${prefix}gripper_base_joint" type="fixed">
+            <parent link="${attach_to}" />
+            <child link="${prefix}gripper_base" />
+            <origin xyz="0 0 0.05" rpy="0 0 1.5707" />
+        </joint>
+
+        <link name="${prefix}gripper_jaw_1">
+            <visual>
+                <geometry>
+                    <mesh filename="package://dim_cpp/urdf/meshes/alfred_gripper_jaw-visual.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <mesh filename="package://dim_cpp/urdf/meshes/alfred_gripper_jaw-collision.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass value="0.1" />
+                <inertia  ixx="8.331715294754746e-05" ixy="0" ixz="0" iyy="0.00012209716697837817" iyz="0" izz="6.891015325925898e-05" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
+            </inertial>
+        </link>
+
+        <joint name="${prefix}jaw_1_joint" type="prismatic">
+            <parent link="${prefix}gripper_base" />
+            <child link="${prefix}gripper_jaw_1" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <axis xyz="1 0 0" />
+            <limit lower="0" upper="0.05" effort="100" velocity="0.1"/>
+        </joint>
+
+        <link name="${prefix}gripper_jaw_2">
+            <visual>
+                <geometry>
+                    <mesh filename="package://dim_cpp/urdf/meshes/alfred_gripper_jaw-visual.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <mesh filename="package://dim_cpp/urdf/meshes/alfred_gripper_jaw-collision.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass value="0.1" />
+                <inertia  ixx="8.331715294754746e-05" ixy="0" ixz="0" iyy="0.00012209716697837817" iyz="0" izz="6.891015325925898e-05" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
+            </inertial>
+        </link>
+
+        <joint name="${prefix}jaw_2_joint" type="prismatic">
+            <parent link="${prefix}gripper_base" />
+            <child link="${prefix}gripper_jaw_2" />
+            <origin xyz="0 0 0" rpy="0 0 3.14159" />
+            <axis xyz="1 0 0" />
+            <limit lower="0" upper="0.05" effort="100" velocity="0.1"/>
+            <mimic joint="${prefix}jaw_1_joint" multiplier="1" offset="0"/>
+        </joint>
+
+    </xacro:macro>
+</robot>

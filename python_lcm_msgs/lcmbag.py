@@ -49,6 +49,40 @@ try:
     import mcap
     from mcap.writer import Writer as MCAPWriter
     from mcap.reader import make_reader as make_mcap_reader
+    # Helper function to count MCAP messages and get info
+    def count_mcap_messages(file_obj):
+        """Count all messages in an MCAP file and collect metadata."""
+        reader = make_mcap_reader(file_obj)
+        
+        # Manual count and metadata collection
+        message_count = 0
+        first_timestamp = None
+        last_timestamp = None
+        topic_counts = {}
+        
+        # Scan all messages
+        for schema, channel, message in reader.iter_messages():
+            message_count += 1
+            topic = channel.topic
+            
+            # Track topic counts
+            if topic not in topic_counts:
+                topic_counts[topic] = 0
+            topic_counts[topic] += 1
+            
+            # Track time range
+            if first_timestamp is None or message.log_time < first_timestamp:
+                first_timestamp = message.log_time
+            
+            if last_timestamp is None or message.log_time > last_timestamp:
+                last_timestamp = message.log_time
+        
+        return {
+            "message_count": message_count,
+            "first_timestamp": first_timestamp,
+            "last_timestamp": last_timestamp,
+            "topic_counts": topic_counts
+        }
     import mcap.records as mcap_records
 except ImportError:
     print("Error: Required packages not found. Please install using:")
@@ -1126,33 +1160,85 @@ class LCMBagPlayer:
         last_timestamp = None
         message_count = 0
         
-        # Open the MCAP file
-        with open(self.bag_path, 'rb') as f:
-            reader = make_mcap_reader(f)
-            
-            # Scan the file to get statistics
-            for schema, channel, message in reader.iter_messages():
-                topic = channel.topic
-                message_count += 1
+        try:
+            # Using fast sampling for initial estimates
+            with open(self.bag_path, 'rb') as f:
+                reader = make_mcap_reader(f)
                 
-                # Track topic counts
-                if topic not in topic_counts:
-                    topic_counts[topic] = 0
-                topic_counts[topic] += 1
+                # Sample approach first for speed
+                sample_message_count = 0
+                sample_first_timestamp = None
+                sample_last_timestamp = None
                 
-                # Track time range
-                if first_timestamp is None or message.log_time < first_timestamp:
-                    first_timestamp = message.log_time
-                
-                if last_timestamp is None or message.log_time > last_timestamp:
-                    last_timestamp = message.log_time
+                # Read a sample of messages for initial statistics
+                for schema, channel, message in reader.iter_messages():
+                    topic = channel.topic
+                    sample_message_count += 1
                     
-                # Just read a sample of messages to get statistics
-                if message_count >= 1000 and first_timestamp and last_timestamp:
-                    logger.info("Sampled first 1000 messages for statistics")
-                    break
+                    # Track topic counts
+                    if topic not in topic_counts:
+                        topic_counts[topic] = 0
+                    topic_counts[topic] += 1
+                    
+                    # Track time range
+                    if sample_first_timestamp is None or message.log_time < sample_first_timestamp:
+                        sample_first_timestamp = message.log_time
+                    
+                    if sample_last_timestamp is None or message.log_time > sample_last_timestamp:
+                        sample_last_timestamp = message.log_time
+                        
+                    # Just read a sample of messages for quick statistics
+                    if sample_message_count >= 1000:
+                        logger.info("Sampled first 1000 messages to estimate statistics")
+                        break
+            
+            # Now do a full scan in the background with a progress indicator thread
+            logger.info("Scanning entire bag file to count messages (this may take a while)...")
+            
+            # Define a progress indicator function
+            def progress_indicator():
+                dots = 0
+                while not complete_scan_done:
+                    print(f"\rScanning bag file{'.' * dots}", end='', flush=True)
+                    dots = (dots + 1) % 4
+                    time.sleep(0.5)
+                print("\rBag scan complete   ", flush=True)
+            
+            # Start the progress thread
+            complete_scan_done = False
+            progress_thread = threading.Thread(target=progress_indicator)
+            progress_thread.daemon = True
+            progress_thread.start()
+            
+            # Do the full scan
+            try:
+                with open(self.bag_path, 'rb') as f:
+                    # Get full counts and time ranges
+                    metadata = count_mcap_messages(f)
+                    
+                    # Apply all results from full scan
+                    message_count = metadata["message_count"]
+                    first_timestamp = metadata["first_timestamp"]
+                    last_timestamp = metadata["last_timestamp"]
+                    topic_counts = metadata["topic_counts"]
+                    
+                    # Set total message count from full scan
+                    self.total_message_count = message_count
+                    logger.info(f"Full scan complete: {message_count} messages found")
+            finally:
+                complete_scan_done = True
+                if progress_thread.is_alive():
+                    progress_thread.join(timeout=1.0)
         
-        self.total_message_count = message_count
+        except Exception as e:
+            # If all else fails, use the sampled data
+            logger.error(f"Error scanning bag file: {e}")
+            message_count = sample_message_count
+            first_timestamp = sample_first_timestamp
+            last_timestamp = sample_last_timestamp
+            self.total_message_count = message_count
+            logger.warning(f"Using sampled data: approximately {message_count} messages")
+        
         self.first_timestamp = first_timestamp
         self.last_timestamp = last_timestamp
         self.topic_counts = topic_counts
@@ -1161,7 +1247,9 @@ class LCMBagPlayer:
         if first_timestamp and last_timestamp:
             duration_ns = last_timestamp - first_timestamp
             duration_s = duration_ns / 1e9
+            self.bag_duration = duration_s
             logger.info(f"Time range: {duration_s:.2f} seconds")
+            logger.info(f"Total messages: {self.total_message_count}")
             
         # Apply time filters if specified
         self.effective_start_time = self.start_time_filter if self.start_time_filter else first_timestamp
@@ -1203,48 +1291,66 @@ class LCMBagPlayer:
         if max_count is None:
             max_count = self.chunk_size
             
-        logger.info(f"Loading messages chunk from index {start_index}, max {max_count}")
+        logger.info(f"Loading messages chunk from index {start_index}, max {max_count} (out of {self.total_message_count} total)")
         
         messages = []
         next_index = start_index
-        current_index = 0
+        
+        # Tracking variables for optimized loading method
+        total_processed = 0
+        reached_start = (start_index == 0)
+        target_messages = max_count
+        
+        # For large indices, show a progress indicator
+        if start_index > 5000:
+            logger.info(f"Seeking to position {start_index}...")
         
         # Open the MCAP file
         with open(self.bag_path, 'rb') as f:
             reader = make_mcap_reader(f)
             
-            # Skip to start_index
+            # Process messages
             for schema, channel, message in reader.iter_messages():
-                if current_index >= start_index:
-                    topic = channel.topic
-                    
-                    # Apply topic filter
-                    if self.topics and topic not in self.topics:
-                        current_index += 1
-                        next_index = current_index
-                        continue
-                    
-                    # Apply time filter
-                    if (self.effective_start_time and message.log_time < self.effective_start_time) or \
-                       (self.effective_end_time and message.log_time > self.effective_end_time):
-                        current_index += 1
-                        next_index = current_index
-                        continue
-                    
-                    # Add message to queue
-                    messages.append({
-                        'channel': topic,
-                        'timestamp': message.log_time,
-                        'data': message.data
-                    })
-                    
-                    next_index = current_index + 1
-                    
-                    # Check if we've loaded enough messages
-                    if len(messages) >= max_count:
-                        break
+                # Count this message
+                total_processed += 1
                 
-                current_index += 1
+                # Check if we've reached our starting index
+                if not reached_start:
+                    if total_processed > start_index:
+                        reached_start = True
+                        logger.debug(f"Reached starting index: {start_index}")
+                    else:
+                        # Skip until we reach starting index
+                        if start_index > 10000 and total_processed % 5000 == 0:
+                            logger.debug(f"Seeking... {total_processed}/{start_index}")
+                        continue
+                
+                # We're now at or past the start index
+                topic = channel.topic
+                
+                # Apply topic filter
+                if self.topics and topic not in self.topics:
+                    continue
+                
+                # Apply time filter
+                if (self.effective_start_time and message.log_time < self.effective_start_time) or \
+                   (self.effective_end_time and message.log_time > self.effective_end_time):
+                    continue
+                
+                # Add message to queue
+                messages.append({
+                    'channel': topic,
+                    'timestamp': message.log_time,
+                    'data': message.data
+                })
+                
+                # Update next index to the position after this message
+                next_index = total_processed
+                
+                # Check if we've loaded enough messages
+                if len(messages) >= target_messages:
+                    logger.debug(f"Loaded {len(messages)} messages, stopping at index {next_index}")
+                    break
         
         # Sort messages by timestamp
         messages.sort(key=lambda m: m['timestamp'])
@@ -1460,6 +1566,7 @@ class LCMBagPlayer:
                                 self.total_pause_duration = 0  # Reset pause tracking on loop
                             chunk, next_index = self._load_messages_chunk(0, self.chunk_size)
                             if chunk:
+                                logger.info(f"Loaded new chunk for loop with {len(chunk)} messages")
                                 self.message_queue = chunk
                                 self.message_count = len(chunk)
                             continue
@@ -1468,9 +1575,10 @@ class LCMBagPlayer:
                             break
                     
                     # Load next chunk
-                    logger.info(f"Loading next chunk at index {next_index}")
+                    logger.info(f"Loading next chunk at index {next_index}/{self.total_message_count}")
                     chunk, next_chunk_index = self._load_messages_chunk(next_index, self.chunk_size)
                     if chunk:
+                        logger.info(f"Loaded chunk with {len(chunk)} messages, continuing playback")
                         self.message_queue = chunk
                         self.current_index = 0
                         next_index = next_chunk_index
@@ -1543,6 +1651,8 @@ class LCMBagPlayer:
             self.play_thread.daemon = True
             self.play_thread.start()
             logger.info("Playback started")
+            logger.info(f"Bag duration: {self.bag_duration:.2f} seconds")
+            logger.info(f"Messages to play: {self.total_message_count}")
         except Exception as e:
             logger.error(f"Failed to start playback: {e}")
             self.stop()

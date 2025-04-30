@@ -1,0 +1,7 @@
+{
+    "thing1_vector3": "foxglove.Vector3",
+    "Image1": "foxglove.RawImage",
+    "Image2": "foxglove.RawImage",
+    "tf": "foxglove.FrameTransforms",
+    "joint_states": "json"
+}

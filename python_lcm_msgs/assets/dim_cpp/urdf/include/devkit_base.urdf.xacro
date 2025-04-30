@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+
+<robot name="devkit_base"
+    xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="devkit_base"
+        params="base_frame base_pos_x base_pos_y base_pos_z  base_roll base_pitch base_yaw prefix:='' r:=0.8 g:=0.8 b:=0.8 a:=1.0 fixed:=false">
+
+        <xacro:property
+            name="file_prefix"
+            value="package://dim_cpp" />
+
+        <link name="base_center" />
+
+        <joint name="base_parent_joint" type="fixed">
+            <parent link="${base_frame}" />
+            <child link="base_center" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+        <link name="devkit_base_link">
+            <visual>
+                <origin xyz="${base_pos_x} ${base_pos_y} ${base_pos_z}" rpy="${base_roll} ${base_pitch} ${base_yaw}" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/devkit_base_wheels_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="${base_pos_x} ${base_pos_y} ${base_pos_z}" rpy="${base_roll} ${base_pitch} ${base_yaw}" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/devkit_base_wheels_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+            <inertial>
+                <mass value="45"/>
+                <inertia  ixx="12.732327" ixy="0" ixz="0" iyy="12.513553" iyz="0" izz="1.8057749" />
+                <origin xyz=".225 -.2125 .9125" rpy="0 0 0" />
+            </inertial>
+        </link>
+
+        <joint name="base_center_joint" type="fixed">
+            <parent link="base_center" />
+            <child link="devkit_base_link" />
+            <origin xyz="0 0 0" rpy="0 0 1.5707" />
+        </joint>
+
+        <link name="pillar_platform">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/pillar_platform_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/pillar_platform_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+            <inertial>
+                <mass value="1.5"/>
+                <inertia  ixx="0.008729344" ixy="0" ixz="0" iyy="0.0085796565" iyz="0" izz="0.01050275" />
+                <origin xyz=".225 -.365 1.41" rpy="0 0 0" />
+            </inertial>
+        </link>
+
+        <xacro:unless value="${fixed}">
+            <joint name="pillar_platform_joint" type="prismatic">
+                <parent link="devkit_base_link" />
+                <child link="pillar_platform" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <axis xyz="0 0 1" />
+                <limit lower="-0.65" upper="0.0" effort="100" velocity="0.1"/>
+            </joint>
+        </xacro:unless>
+        <xacro:if value="${fixed}">
+            <joint name="pillar_platform_joint" type="fixed">
+                <parent link="devkit_base_link" />
+                <child link="pillar_platform" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
+            </joint>
+        </xacro:if>
+        
+    </xacro:macro>
+    <!-- <xacro:devkit_base base_frame="world" base_pos_x="0.0" base_pos_y="0.0" base_pos_z="0.0" base_roll="0.0" base_pitch="0.0" base_yaw="0.0" r="0.8" g="0.8" b="0.8" a="1.0" /> -->
+</robot>

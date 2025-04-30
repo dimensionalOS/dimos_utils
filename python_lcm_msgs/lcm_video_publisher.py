@@ -39,7 +39,7 @@ def cv2_to_sensor_msgs_image(cv_image, encoding="bgr8", seq=0):
     img_msg.header = Header()
     img_msg.header.seq = seq
     img_msg.header.stamp = int(time.time() * 1e9)  # Current time in nanoseconds
-    img_msg.header.frame_id = "camera"
+    img_msg.header.frame_id = "world"
     
     # Set image properties
     height, width, channels = cv_image.shape
