@@ -361,9 +361,28 @@ class RobotStatePublisher:
                         ax, ay, az = joint.axis
                         distance = position
                         
-                        transform.transform.translation.x += ax * distance
-                        transform.transform.translation.y += ay * distance
-                        transform.transform.translation.z += az * distance
+                        # Create rotation matrix from fixed quaternion
+                        # This is needed to correctly orient the prismatic joint axis
+                        qw, qx, qy, qz = q_fixed.w, q_fixed.x, q_fixed.y, q_fixed.z
+                        
+                        # Rotate the axis vector by the fixed quaternion
+                        # Formula for rotating a vector v by quaternion q: q*v*q^-1 (simplified)
+                        dx = (ax * (qw*qw + qx*qx - qy*qy - qz*qz) + 
+                              ay * (2*qx*qy - 2*qw*qz) + 
+                              az * (2*qx*qz + 2*qw*qy)) * distance
+                        
+                        dy = (ax * (2*qx*qy + 2*qw*qz) + 
+                              ay * (qw*qw - qx*qx + qy*qy - qz*qz) + 
+                              az * (2*qy*qz - 2*qw*qx)) * distance
+                        
+                        dz = (ax * (2*qx*qz - 2*qw*qy) + 
+                              ay * (2*qy*qz + 2*qw*qx) + 
+                              az * (qw*qw - qx*qx - qy*qy + qz*qz)) * distance
+                        
+                        # Apply the rotated translation
+                        transform.transform.translation.x += dx
+                        transform.transform.translation.y += dy
+                        transform.transform.translation.z += dz
                         transform.transform.rotation = q_fixed
                     
                     # For fixed joints, just use the fixed rotation
@@ -436,8 +455,8 @@ def main():
     if not urdf_path:
         # Try to find a URDF file in common locations
         potential_paths = [
-            "/Users/yashas/Documents/scratch/ros_to_lcm/python_lcm_msgs/assets/alfred_base_descr.urdf",
-            "/Users/yashas/Documents/scratch/ros_to_lcm/python_lcm_msgs/assets/dim_cpp/urdf/alfred_base_descr.urdf"
+            "/Users/yashas/Documents/scratch/ros_to_lcm/python_lcm_msgs/assets/devkit_base_descr.urdf",
+            "/Users/yashas/Documents/scratch/ros_to_lcm/python_lcm_msgs/assets/dim_cpp/urdf/devkit_base_descr.urdf"
         ]
         
         for path in potential_paths:

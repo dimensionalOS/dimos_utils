@@ -7,9 +7,9 @@
 	<xacro:include filename="$(find dim_cpp)/piper_description/urdf/piper_description_macro.xacro" />
 
 	<link name="$(arg base_frame)" />
-	<xacro:devkit_base base_frame="$(arg base_frame)" base_pos_x="0.0" base_pos_y="0.0" base_pos_z="0.0" base_roll="0.0" base_pitch="0.0" base_yaw="0.0" r="0.8" g="0.8" b="0.8" a="1.0" />
+	<xacro:devkit_base base_frame="$(arg base_frame)" base_pos_x="0.0" base_pos_y="0.0" base_pos_z="0.23625" base_roll="0.0" base_pitch="0.0" base_yaw="0.0" r="0.8" g="0.8" b="0.8" a="1.0" />
 	<xacro:piper_angled_base base_frame="pillar_platform" base_pos_x="0.0" base_pos_y="0.0" base_pos_z="0.0" base_roll="0.0" base_pitch="0.0" base_yaw="0.0" r="0.8" g="0.8" b="0.8" a="1.0" />
-	<xacro:piper_arm base_frame="piper_angled_mount" base_pos_x="0.0" base_pos_y="0.292645" base_pos_z="1.42886" base_roll="0.0" base_pitch="0.7854" base_yaw="1.5707" r="0.8" g="0.8" b="0.8" a="1.0" />
+	<xacro:piper_arm base_frame="piper_angled_mount" base_pos_x="0.0" base_pos_y="0.292645" base_pos_z="1.42886" base_roll="0.0" base_pitch="0.7854" base_yaw="1.5707" r="0.8" g="0.8" b="0.8" a="1.0" />	
 
 
 </robot>

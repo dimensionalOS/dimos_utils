@@ -43,6 +43,85 @@
     <child link="devkit_base_link"/>
     <origin rpy="0 0 1.5707" xyz="0 0 0"/>
   </joint>
+  <link name="pan_tilt_base">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_base_collision.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="mat">
+        <color rgba="0.8 0.8 0.8 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_base_collision.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="mat">
+        <color rgba="0.8 0.8 0.8 1.0"/>
+      </material>
+    </collision>
+  </link>
+  <joint name="pan_tilt_base_joint" type="fixed">
+    <parent link="devkit_base_link"/>
+    <child link="pan_tilt_base"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+  <link name="pan_tilt_pan">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 -.1325 0"/>
+      <geometry>
+        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_pan_collision.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="mat">
+        <color rgba="0.8 0.8 0.8 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 -.1325 0"/>
+      <geometry>
+        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_pan_collision.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="mat">
+        <color rgba="0.8 0.8 0.8 1.0"/>
+      </material>
+    </collision>
+  </link>
+  <joint name="pan_tilt_pan_joint" type="revolute">
+    <parent link="pan_tilt_base"/>
+    <child link="pan_tilt_pan"/>
+    <origin rpy="0 0 0" xyz="0 .1325 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="100" lower="-3.14" upper="3.14" velocity="1"/>
+  </joint>
+  <link name="pan_tilt_head">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 -.1325 -1.6465"/>
+      <geometry>
+        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_head_collision.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="mat">
+        <color rgba="0.8 0.8 0.8 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 -.1325 -1.6465"/>
+      <geometry>
+        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_head_collision.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="mat">
+        <color rgba="0.8 0.8 0.8 1.0"/>
+      </material>
+    </collision>
+  </link>
+  <joint name="pan_tilt_head_joint" type="revolute">
+    <parent link="pan_tilt_pan"/>
+    <child link="pan_tilt_head"/>
+    <origin rpy="0 0 0" xyz="0 0 1.6465"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="100" lower="-1.57" upper="1.57" velocity="1"/>
+  </joint>
   <link name="pillar_platform">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>

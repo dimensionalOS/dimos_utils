@@ -15,12 +15,12 @@
         <joint name="base_parent_joint" type="fixed">
             <parent link="${base_frame}" />
             <child link="base_center" />
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="${base_pos_x} ${base_pos_y} ${base_pos_z}" rpy="${base_roll} ${base_pitch} ${base_yaw}" />
         </joint>
 
         <link name="devkit_base_link">
             <visual>
-                <origin xyz="${base_pos_x} ${base_pos_y} ${base_pos_z}" rpy="${base_roll} ${base_pitch} ${base_yaw}" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
                     <mesh filename="${file_prefix}/meshes/devkit_base/devkit_base_wheels_collision.stl" scale="1 1 1"/>
                 </geometry>
@@ -29,7 +29,7 @@
                 </material>
             </visual>
             <collision>
-                <origin xyz="${base_pos_x} ${base_pos_y} ${base_pos_z}" rpy="${base_roll} ${base_pitch} ${base_yaw}" />
+                <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
                     <mesh filename="${file_prefix}/meshes/devkit_base/devkit_base_wheels_collision.stl" scale="1 1 1"/>
                 </geometry>
@@ -48,6 +48,91 @@
             <parent link="base_center" />
             <child link="devkit_base_link" />
             <origin xyz="0 0 0" rpy="0 0 1.5707" />
+        </joint>
+
+        <link name="pan_tilt_base">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/pan_tilt_base_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/pan_tilt_base_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+        </link>
+
+        <joint name="pan_tilt_base_joint" type="fixed">
+            <parent link="devkit_base_link" />
+            <child link="pan_tilt_base" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </joint>
+
+        <link name="pan_tilt_pan">
+            <visual>
+                <origin xyz="0 -.1325 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/pan_tilt_pan_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 -.1325 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/pan_tilt_pan_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+        </link>
+
+        <joint name="pan_tilt_pan_joint" type="revolute">
+            <parent link="pan_tilt_base" />
+            <child link="pan_tilt_pan" />
+            <origin xyz="0 .1325 0" rpy="0 0 0" />
+            <axis xyz="0 0 1" />
+            <limit lower="-3.14" upper="3.14" effort="100" velocity="1"/>
+        </joint>
+
+        <link name="pan_tilt_head">
+            <visual>
+                <origin xyz="0 -.1325 -1.6465" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/pan_tilt_head_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 -.1325 -1.6465" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/pan_tilt_head_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+        </link>
+
+        <joint name="pan_tilt_head_joint" type="revolute">
+            <parent link="pan_tilt_pan" />
+            <child link="pan_tilt_head" />
+            <origin xyz="0 0 1.6465" rpy="0 0 0" />
+            <axis xyz="1 0 0" />
+            <limit lower="-1.57" upper="1.57" effort="100" velocity="1"/>
         </joint>
 
         <link name="pillar_platform">

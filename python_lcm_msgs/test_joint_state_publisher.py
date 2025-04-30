@@ -29,8 +29,8 @@ def randomize_positions():
 
 # Create the LCM message
 msg = JointState()
-msg.name = ["pillar_platform_joint", "joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7", "joint8"]
-msg.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+msg.name = ["pillar_platform_joint", "pan_tilt_pan_joint", "pan_tilt_head_joint", "joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7", "joint8"]
+msg.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 msg.velocity = []  # Empty list by default
 msg.effort = []    # Empty list by default
 msg.name_length = len(msg.name)
