@@ -1,7 +1,7 @@
 import lcm
-from geometry_msgs import Twist, Vector3
-from sensor_msgs import JointState
-from tf2_msgs import TFMessage
+from lcm_msgs.geometry_msgs import Twist, Vector3
+from lcm_msgs.sensor_msgs import JointState
+from lcm_msgs.tf2_msgs import TFMessage
 
 def my_handler(channel, data):
     if channel == "TWIST" or channel == "TWIST2":
