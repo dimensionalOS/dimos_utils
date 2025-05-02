@@ -11,7 +11,7 @@ def update_positions():
         msg.position[i] = slider.get()
     
     # Publish the updated joint state
-    lc.publish("joint_states", msg.encode())
+    lc.publish("joint_states#sensor_msgs.JointState", msg.encode())
     
     # Schedule the next update
     root.after(100, update_positions)  # 100ms = 0.1s

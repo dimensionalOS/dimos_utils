@@ -270,7 +270,7 @@ class RobotStatePublisher:
             except Exception as e:
                 print(f"Error processing joint state message: {e}")
         
-        self.lc.subscribe("joint_states", joint_state_handler)
+        self.lc.subscribe("joint_states#sensor_msgs.JointState", joint_state_handler)
         
         try:
             while self.running:
@@ -412,7 +412,7 @@ class RobotStatePublisher:
                         transform.transform.rotation.w = 1.0
                 
                 try:
-                    self.lc.publish("tf", tf_msg.encode())
+                    self.lc.publish("tf#tf2_msgs.TFMessage", tf_msg.encode())
                     if len(transforms) > 0:
                         print(f"Published {len(transforms)} transforms")
                 except Exception as e:

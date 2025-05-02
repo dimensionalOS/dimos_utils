@@ -1,9 +1,0 @@
-{
-	"thing1_vector3": "foxglove.Vector3",
-	"Image1": "foxglove.RawImage",
-	"Image2": "foxglove.RawImage",
-	"head_cam_rgb": "foxglove.RawImage",
-	"head_cam_depth": "foxglove.RawImage",
-	"tf": "foxglove.FrameTransforms",
-	"joint_states": "json"
-}
