@@ -3,7 +3,7 @@ import lcm
 import tkinter as tk
 from tkinter import ttk
 import random
-from sensor_msgs import JointState
+from lcm_msgs.sensor_msgs import JointState
 
 def update_positions():
     # Update position values from sliders
