@@ -49,7 +49,7 @@ HARDCODED_SCHEMAS = {
                             "type": "object",
                             "properties": {
                                 "sec": {"type": "integer"},
-                                "nanosec": {"type": "integer"}
+                                "nsec": {"type": "integer"}
                             }
                         },
                         "frame_id": {"type": "string"}
@@ -79,7 +79,7 @@ HARDCODED_SCHEMAS = {
                             "type": "object",
                             "properties": {
                                 "sec": {"type": "integer"},
-                                "nanosec": {"type": "integer"}
+                                "nsec": {"type": "integer"}
                             }
                         },
                         "frame_id": {"type": "string"}
@@ -105,7 +105,7 @@ HARDCODED_SCHEMAS = {
                             "type": "object",
                             "properties": {
                                 "sec": {"type": "integer"},
-                                "nanosec": {"type": "integer"}
+                                "nsec": {"type": "integer"}
                             }
                         },
                         "frame_id": {"type": "string"}
@@ -148,7 +148,7 @@ HARDCODED_SCHEMAS = {
                                         "type": "object",
                                         "properties": {
                                             "sec": {"type": "integer"},
-                                            "nanosec": {"type": "integer"}
+                                            "nsec": {"type": "integer"}
                                         }
                                     },
                                     "frame_id": {"type": "string"}
@@ -195,9 +195,9 @@ HARDCODED_SCHEMAS = {
                             "type": "object",
                             "properties": {
                                 "sec": {"type": "integer"},
-                                "nanosec": {"type": "integer"}
+                                "nsec": {"type": "integer"}
                             },
-                            "required": ["sec", "nanosec"]
+                            "required": ["sec", "nsec"]
                         },
                         "frame_id": {"type": "string"}
                     },
@@ -256,17 +256,17 @@ TYPE_MAPPING = {
         "type": "object",
         "properties": {
             "sec": {"type": "integer"},
-            "nanosec": {"type": "integer"}
+            "nsec": {"type": "integer"}
         },
-        "required": ["sec", "nanosec"]
+        "required": ["sec", "nsec"]
     },
     "duration": {
         "type": "object",
         "properties": {
             "sec": {"type": "integer"},
-            "nanosec": {"type": "integer"}
+            "nsec": {"type": "integer"}
         },
-        "required": ["sec", "nanosec"]
+        "required": ["sec", "nsec"]
     },
 }
 
@@ -421,9 +421,9 @@ class SchemaGenerator:
                         "type": "object",
                         "properties": {
                             "sec": {"type": "integer"},
-                            "nanosec": {"type": "integer"}  # Use nanosec instead of nsec for Foxglove compatibility
+                            "nsec": {"type": "integer"}  # Use nanosec instead of nsec for Foxglove compatibility
                         },
-                        "required": ["sec", "nanosec"]
+                        "required": ["sec", "nsec"]
                     },
                     "frame_id": {"type": "string"}
                 },
@@ -670,13 +670,13 @@ class MessageConverter:
                 if hasattr(header.stamp, "sec") and hasattr(header.stamp, "nsec"):
                     stamp = {
                         "sec": int(header.stamp.sec) if hasattr(header.stamp, "sec") else 0,
-                        "nanosec": int(header.stamp.nsec) if hasattr(header.stamp, "nsec") else 0
+                        "nsec": int(header.stamp.nsec) if hasattr(header.stamp, "nsec") else 0
                     }
                 else:
                     # Handle builtin_interfaces/Time which might use nanosec instead of nsec
                     stamp = {
                         "sec": int(header.stamp.sec) if hasattr(header.stamp, "sec") else 0,
-                        "nanosec": int(
+                        "nsec": int(
                             header.stamp.nanosec if hasattr(header.stamp, "nanosec") 
                             else (header.stamp.nsec if hasattr(header.stamp, "nsec") else 0)
                         )
@@ -685,14 +685,14 @@ class MessageConverter:
                 # Some messages have sec/nsec directly in the header
                 stamp = {
                     "sec": int(header.sec),
-                    "nanosec": int(header.nsec)
+                    "nsec": int(header.nsec)
                 }
             else:
                 # Default to current time if no valid stamp found
                 now = time.time()
                 stamp = {
                     "sec": int(now),
-                    "nanosec": int((now % 1) * 1e9)
+                    "nsec": int((now % 1) * 1e9)
                 }
                 
             # Ensure frame_id is a string (convert bytes if needed)
@@ -711,7 +711,7 @@ class MessageConverter:
             now = time.time()
             return {
                 "seq": 0,
-                "stamp": {"sec": int(now), "nanosec": int((now % 1) * 1e9)},
+                "stamp": {"sec": int(now), "nsec": int((now % 1) * 1e9)},
                 "frame_id": ""
             }
         
