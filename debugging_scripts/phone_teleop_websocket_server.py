@@ -13,7 +13,7 @@ import traceback
 from datetime import datetime
 from colorama import init, Fore, Style
 import lcm
-from geometry_msgs import Twist
+from lcm_msgs.geometry_msgs import Twist
 
 # Set up logging
 logging.basicConfig(

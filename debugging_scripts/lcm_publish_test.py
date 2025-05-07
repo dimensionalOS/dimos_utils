@@ -1,5 +1,5 @@
 import lcm
-from geometry_msgs import Twist, Vector3
+from lcm_msgs.geometry_msgs import Twist, Vector3
 import time
 
 

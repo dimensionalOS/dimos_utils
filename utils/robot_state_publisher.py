@@ -6,10 +6,10 @@ import math
 import xml.etree.ElementTree as ET
 import numpy as np
 from threading import Thread, Lock
-from sensor_msgs import JointState
-from geometry_msgs import Transform, TransformStamped, Vector3, Quaternion
-from tf2_msgs import TFMessage
-from std_msgs import Header
+from lcm_msgs.sensor_msgs import JointState
+from lcm_msgs.geometry_msgs import Transform, TransformStamped, Vector3, Quaternion
+from lcm_msgs.tf2_msgs import TFMessage
+from lcm_msgs.std_msgs import Header
 
 def quaternion_from_euler(roll, pitch, yaw):
     """
@@ -207,7 +207,7 @@ class URDF:
         return tree, root_link
 
 class RobotStatePublisher:
-    def __init__(self, urdf_path, fixed_frame="world", publish_rate=50.0, enforce_limits=False):
+    def __init__(self, urdf_path, fixed_frame="world", publish_rate=50.0, enforce_limits=True):
         self.urdf = URDF(urdf_path)
         self.fixed_frame = fixed_frame
         self.publish_rate = publish_rate
@@ -446,7 +446,7 @@ def main():
     parser.add_argument('--urdf', type=str, help='Path to URDF file')
     parser.add_argument('--fixed-frame', type=str, default='world', help='Name of the fixed frame')
     parser.add_argument('--rate', type=float, default=30.0, help='Publishing rate in Hz')
-    parser.add_argument('--enforce-limits', action='store_true', help='Enforce joint limits from URDF')
+    parser.add_argument('--enforce-limits', type=bool, default=True, help='Enforce joint limits from URDF')
     
     args = parser.parse_args()
     
@@ -455,8 +455,7 @@ def main():
     if not urdf_path:
         # Try to find a URDF file in common locations
         potential_paths = [
-            "/Users/yashas/Documents/scratch/ros_to_lcm/python_lcm_msgs/assets/devkit_base_descr.urdf",
-            "/Users/yashas/Documents/scratch/ros_to_lcm/python_lcm_msgs/assets/dim_cpp/urdf/devkit_base_descr.urdf"
+            "../assets/devkit_base_descr.urdf",
         ]
         
         for path in potential_paths:
