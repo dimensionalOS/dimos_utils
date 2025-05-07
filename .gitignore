@@ -2,6 +2,8 @@
 **/.DS_Store
 *.mcap
 *.mp4
+**/*.mcap
+**/*.mp4
 *.png
 __pycache__/
 **/__pycache__/

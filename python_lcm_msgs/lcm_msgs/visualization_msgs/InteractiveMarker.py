@@ -10,10 +10,8 @@ import struct
 from lcm_msgs import geometry_msgs
 from lcm_msgs import std_msgs
 from . import *
-
 from .MenuEntry import MenuEntry
 from .InteractiveMarkerControl import InteractiveMarkerControl
-
 class InteractiveMarker(object):
 
     __slots__ = ["menu_entries_length", "controls_length", "header", "pose", "name", "description", "scale", "menu_entries", "controls"]

@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .Vector3 import Vector3
-
 class Vector3Stamped(object):
 
     __slots__ = ["header", "vector"]

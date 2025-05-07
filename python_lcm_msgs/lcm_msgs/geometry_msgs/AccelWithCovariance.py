@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .Accel import Accel
-
 class AccelWithCovariance(object):
 
     __slots__ = ["accel", "covariance"]

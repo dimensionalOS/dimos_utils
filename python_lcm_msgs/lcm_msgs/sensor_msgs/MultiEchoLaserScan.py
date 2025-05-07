@@ -10,7 +10,6 @@ import struct
 from lcm_msgs import std_msgs
 from . import *
 from .LaserEcho import LaserEcho
-
 class MultiEchoLaserScan(object):
 
     __slots__ = ["ranges_length", "intensities_length", "header", "angle_min", "angle_max", "angle_increment", "time_increment", "scan_time", "range_min", "range_max", "ranges", "intensities"]

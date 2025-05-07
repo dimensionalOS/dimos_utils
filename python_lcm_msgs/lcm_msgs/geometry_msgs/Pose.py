@@ -8,10 +8,8 @@ from io import BytesIO
 import struct
 
 from . import *
-
 from .Quaternion import Quaternion
 from .Point import Point
-
 class Pose(object):
 
     __slots__ = ["position", "orientation"]

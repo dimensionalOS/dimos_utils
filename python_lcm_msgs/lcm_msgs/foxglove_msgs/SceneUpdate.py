@@ -10,8 +10,6 @@ import struct
 from . import *
 from .SceneEntity import SceneEntity
 from .SceneEntityDeletion import SceneEntityDeletion
-
-Deletion
 class SceneUpdate(object):
 
     __slots__ = ["deletions_length", "entities_length", "deletions", "entities"]

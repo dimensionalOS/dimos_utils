@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .Inertia import Inertia
-
 class InertiaStamped(object):
 
     __slots__ = ["header", "inertia"]

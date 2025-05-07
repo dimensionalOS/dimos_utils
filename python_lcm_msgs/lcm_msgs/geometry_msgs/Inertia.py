@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .Vector3 import Vector3
-
 class Inertia(object):
 
     __slots__ = ["m", "com", "ixx", "ixy", "ixz", "iyy", "iyz", "izz"]

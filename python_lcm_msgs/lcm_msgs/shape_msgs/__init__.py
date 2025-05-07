@@ -5,6 +5,6 @@ lcm-gen 1.5.1
 """
 
 from .Mesh import Mesh as Mesh
-from .MeshTriangle import MeshTriangle as MeshTriangle
-from .SolidPrimitive import SolidPrimitive as SolidPrimitive
 from .Plane import Plane as Plane
+from .SolidPrimitive import SolidPrimitive as SolidPrimitive
+from .MeshTriangle import MeshTriangle as MeshTriangle

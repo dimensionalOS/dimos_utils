@@ -10,7 +10,6 @@ import struct
 from lcm_msgs import geometry_msgs
 from . import *
 from .Color import Color
-
 class SpherePrimitive(object):
 
     __slots__ = ["pose", "size", "color"]

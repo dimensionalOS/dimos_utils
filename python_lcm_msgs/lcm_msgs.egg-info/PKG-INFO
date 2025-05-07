@@ -1,0 +1,12 @@
+Metadata-Version: 2.2
+Name: lcm_msgs
+Version: 0.1.1
+Summary: LCM generated Python bindings for ROS based types
+Author: Dimensional
+Requires-Python: >=3.6
+Requires-Dist: lcm
+Requires-Dist: foxglove-websocket
+Dynamic: author
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

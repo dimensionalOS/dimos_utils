@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .MapMetaData import MapMetaData
-
 class OccupancyGrid(object):
 
     __slots__ = ["data_length", "header", "info", "data"]

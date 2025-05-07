@@ -10,7 +10,6 @@ import struct
 from lcm_msgs import geometry_msgs
 from . import *
 from .Color import Color
-
 class TriangleListPrimitive(object):
 
     __slots__ = ["points_length", "colors_length", "indices_length", "pose", "points", "color", "colors", "indices"]

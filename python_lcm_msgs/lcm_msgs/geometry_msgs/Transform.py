@@ -8,10 +8,8 @@ from io import BytesIO
 import struct
 
 from . import *
-
-from .Vector3 import Vector3
 from .Quaternion import Quaternion
-
+from .Vector3 import Vector3
 class Transform(object):
 
     __slots__ = ["translation", "rotation"]

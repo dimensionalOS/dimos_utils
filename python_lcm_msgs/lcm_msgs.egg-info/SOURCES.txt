@@ -1,0 +1,7 @@
+README.md
+setup.py
+lcm_msgs.egg-info/PKG-INFO
+lcm_msgs.egg-info/SOURCES.txt
+lcm_msgs.egg-info/dependency_links.txt
+lcm_msgs.egg-info/requires.txt
+lcm_msgs.egg-info/top_level.txt

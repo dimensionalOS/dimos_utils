@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .Point import Point
-
 class PointStamped(object):
 
     __slots__ = ["header", "point"]

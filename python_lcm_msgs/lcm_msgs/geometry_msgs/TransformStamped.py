@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .Transform import Transform
-
 class TransformStamped(object):
 
     __slots__ = ["header", "child_frame_id", "transform"]

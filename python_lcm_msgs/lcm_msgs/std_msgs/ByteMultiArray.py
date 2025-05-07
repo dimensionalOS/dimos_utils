@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .MultiArrayLayout import MultiArrayLayout
-
 class ByteMultiArray(object):
 
     __slots__ = ["data_length", "layout", "data"]

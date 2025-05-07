@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .GoalID import GoalID
-
 class GoalStatus(object):
 
     __slots__ = ["goal_id", "status", "text"]

@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .InteractiveMarker import InteractiveMarker
-
 class InteractiveMarkerInit(object):
 
     __slots__ = ["markers_length", "server_id", "seq_num", "markers"]

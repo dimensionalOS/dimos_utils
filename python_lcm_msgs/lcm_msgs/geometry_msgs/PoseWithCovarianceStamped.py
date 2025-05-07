@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .PoseWithCovariance import PoseWithCovariance
-
 class PoseWithCovarianceStamped(object):
 
     __slots__ = ["header", "pose"]

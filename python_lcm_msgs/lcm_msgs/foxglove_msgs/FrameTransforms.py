@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .FrameTransform import FrameTransform
-
 class FrameTransforms(object):
 
     __slots__ = ["transforms_length", "transforms"]

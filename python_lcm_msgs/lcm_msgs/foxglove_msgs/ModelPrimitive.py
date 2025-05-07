@@ -10,7 +10,6 @@ import struct
 from lcm_msgs import geometry_msgs
 from . import *
 from .Color import Color
-
 class ModelPrimitive(object):
 
     __slots__ = ["data_length", "pose", "scale", "color", "override_color", "url", "media_type", "data"]

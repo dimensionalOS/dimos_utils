@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .KeyValue import KeyValue
-
 class DiagnosticStatus(object):
 
     __slots__ = ["values_length", "level", "name", "message", "hardware_id", "values"]

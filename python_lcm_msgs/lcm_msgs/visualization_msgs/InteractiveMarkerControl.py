@@ -10,7 +10,6 @@ import struct
 from lcm_msgs import geometry_msgs
 from . import *
 from .Marker import Marker
-
 class InteractiveMarkerControl(object):
 
     __slots__ = ["markers_length", "name", "orientation", "orientation_mode", "interaction_mode", "always_visible", "markers", "independent_marker_orientation", "description"]

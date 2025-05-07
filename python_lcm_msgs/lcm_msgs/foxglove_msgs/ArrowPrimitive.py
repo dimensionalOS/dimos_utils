@@ -10,7 +10,6 @@ import struct
 from lcm_msgs import geometry_msgs
 from . import *
 from .Color import Color
-
 class ArrowPrimitive(object):
 
     __slots__ = ["pose", "shaft_length", "shaft_diameter", "head_length", "head_diameter", "color"]

@@ -11,7 +11,6 @@ from lcm_msgs import geometry_msgs
 from lcm_msgs import std_msgs
 from . import *
 from .ChannelFloat32 import ChannelFloat32
-
 class PointCloud(object):
 
     __slots__ = ["points_length", "channels_length", "header", "points", "channels"]

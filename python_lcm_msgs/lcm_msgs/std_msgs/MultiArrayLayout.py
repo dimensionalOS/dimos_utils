@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .MultiArrayDimension import MultiArrayDimension
-
 class MultiArrayLayout(object):
 
     __slots__ = ["dim_length", "dim", "data_offset"]

@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .JoyFeedback import JoyFeedback
-
 class JoyFeedbackArray(object):
 
     __slots__ = ["array_length", "array"]

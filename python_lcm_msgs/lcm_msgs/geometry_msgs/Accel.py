@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .Vector3 import Vector3
-
 class Accel(object):
 
     __slots__ = ["linear", "angular"]

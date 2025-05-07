@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .Accel import Accel
-
 class AccelStamped(object):
 
     __slots__ = ["header", "accel"]

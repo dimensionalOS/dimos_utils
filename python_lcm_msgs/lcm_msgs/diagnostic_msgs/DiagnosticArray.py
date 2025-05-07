@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .DiagnosticStatus import DiagnosticStatus
-
 class DiagnosticArray(object):
 
     __slots__ = ["status_length", "header", "status"]

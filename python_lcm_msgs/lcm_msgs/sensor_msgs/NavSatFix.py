@@ -10,7 +10,6 @@ import struct
 from lcm_msgs import std_msgs
 from . import *
 from .NavSatStatus import NavSatStatus
-
 class NavSatFix(object):
 
     __slots__ = ["header", "status", "latitude", "longitude", "altitude", "position_covariance", "position_covariance_type"]

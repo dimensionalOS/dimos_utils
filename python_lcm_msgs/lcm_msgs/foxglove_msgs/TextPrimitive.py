@@ -10,7 +10,6 @@ import struct
 from lcm_msgs import geometry_msgs
 from . import *
 from .Color import Color
-
 class TextPrimitive(object):
 
     __slots__ = ["pose", "billboard", "font_size", "scale_invariant", "color", "text"]

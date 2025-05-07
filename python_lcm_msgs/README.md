@@ -48,7 +48,7 @@ encoded_msg = joint_state.encode()
 4. Run the provided fix script to correct internal imports:
 
 ```bash
-./enhanced_fix_imports.py
+./fix_imports.py
 ```
 
 ### Troubleshooting
@@ -62,7 +62,7 @@ AttributeError: module 'geometry_msgs' has no attribute 'Vector3'
 It's likely due to the internal import structure of the generated LCM files. Run the fix_imports.py script:
 
 ```bash
-./enhanced_fix_imports.py
+./fix_imports.py
 ```
 
 ### Updating Existing Code

@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .Pose import Pose
-
 class PoseWithCovariance(object):
 
     __slots__ = ["pose", "covariance"]

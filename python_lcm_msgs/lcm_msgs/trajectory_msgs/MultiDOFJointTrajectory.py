@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .MultiDOFJointTrajectoryPoint import MultiDOFJointTrajectoryPoint
-
 class MultiDOFJointTrajectory(object):
 
     __slots__ = ["joint_names_length", "points_length", "header", "joint_names", "points"]

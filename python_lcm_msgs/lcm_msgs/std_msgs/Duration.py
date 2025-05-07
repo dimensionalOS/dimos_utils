@@ -9,15 +9,17 @@ import struct
 
 class Duration(object):
 
-    __slots__ = ["data"]
+    __slots__ = ["sec", "nsec"]
 
-    __typenames__ = ["int64_t"]
+    __typenames__ = ["int32_t", "int32_t"]
 
-    __dimensions__ = [None]
+    __dimensions__ = [None, None]
 
     def __init__(self):
-        self.data = 0
-        """ LCM Type: int64_t """
+        self.sec = 0
+        """ LCM Type: int32_t """
+        self.nsec = 0
+        """ LCM Type: int32_t """
 
     def encode(self):
         buf = BytesIO()
@@ -26,7 +28,7 @@ class Duration(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">q", self.data))
+        buf.write(struct.pack(">ii", self.sec, self.nsec))
 
     @staticmethod
     def decode(data: bytes):
@@ -41,13 +43,13 @@ class Duration(object):
     @staticmethod
     def _decode_one(buf):
         self = Duration()
-        self.data = struct.unpack(">q", buf.read(8))[0]
+        self.sec, self.nsec = struct.unpack(">ii", buf.read(8))
         return self
 
     @staticmethod
     def _get_hash_recursive(parents):
         if Duration in parents: return 0
-        tmphash = (0x165e7cfef748811f) & 0xffffffffffffffff
+        tmphash = (0xde1d24a3a8ecb648) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _packed_fingerprint = None

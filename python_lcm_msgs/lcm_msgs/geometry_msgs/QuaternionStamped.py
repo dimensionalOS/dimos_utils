@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .Quaternion import Quaternion
-
 class QuaternionStamped(object):
 
     __slots__ = ["header", "quaternion"]

@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .Wrench import Wrench
-
 class WrenchStamped(object):
 
     __slots__ = ["header", "wrench"]

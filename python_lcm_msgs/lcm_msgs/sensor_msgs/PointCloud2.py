@@ -10,7 +10,6 @@ import struct
 from lcm_msgs import std_msgs
 from . import *
 from .PointField import PointField
-
 class PointCloud2(object):
 
     __slots__ = ["fields_length", "data_length", "header", "height", "width", "fields", "is_bigendian", "point_step", "row_step", "data", "is_dense"]

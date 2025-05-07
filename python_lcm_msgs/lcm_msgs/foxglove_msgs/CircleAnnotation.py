@@ -9,8 +9,6 @@ import struct
 
 from . import *
 from lcm_msgs import builtin_interfaces
-
-
 from .Point2 import Point2
 from .Color import Color
 class CircleAnnotation(object):

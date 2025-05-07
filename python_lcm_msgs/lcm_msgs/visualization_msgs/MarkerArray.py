@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .Marker import Marker
-
 class MarkerArray(object):
 
     __slots__ = ["markers_length", "markers"]

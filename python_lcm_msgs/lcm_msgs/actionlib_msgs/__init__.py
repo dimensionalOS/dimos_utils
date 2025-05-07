@@ -4,6 +4,6 @@ DO NOT MODIFY BY HAND!!!!
 lcm-gen 1.5.1
 """
 
-from .GoalID import GoalID as GoalID
 from .GoalStatusArray import GoalStatusArray as GoalStatusArray
+from .GoalID import GoalID as GoalID
 from .GoalStatus import GoalStatus as GoalStatus

@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .Polygon import Polygon
-
 class PolygonStamped(object):
 
     __slots__ = ["header", "polygon"]

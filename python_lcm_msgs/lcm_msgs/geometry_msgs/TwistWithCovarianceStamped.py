@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .TwistWithCovariance import TwistWithCovariance
-
 class TwistWithCovarianceStamped(object):
 
     __slots__ = ["header", "twist"]

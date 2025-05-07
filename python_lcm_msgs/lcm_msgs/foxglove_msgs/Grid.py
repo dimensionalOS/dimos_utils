@@ -10,8 +10,6 @@ import struct
 from lcm_msgs import geometry_msgs
 from . import *
 from lcm_msgs import builtin_interfaces
-
-
 from .PackedElementField import PackedElementField
 from .Vector2 import Vector2
 class Grid(object):

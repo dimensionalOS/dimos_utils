@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .Point32 import Point32
-
 class Polygon(object):
 
     __slots__ = ["points_length", "points"]

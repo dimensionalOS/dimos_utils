@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import geometry_msgs
 from .MeshTriangle import MeshTriangle
-
 class Mesh(object):
 
     __slots__ = ["triangles_length", "vertices_length", "triangles", "vertices"]

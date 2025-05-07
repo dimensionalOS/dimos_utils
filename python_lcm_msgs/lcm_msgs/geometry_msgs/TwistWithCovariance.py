@@ -9,7 +9,6 @@ import struct
 
 from . import *
 from .Twist import Twist
-
 class TwistWithCovariance(object):
 
     __slots__ = ["twist", "covariance"]

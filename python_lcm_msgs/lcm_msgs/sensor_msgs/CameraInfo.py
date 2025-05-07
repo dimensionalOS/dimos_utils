@@ -10,7 +10,6 @@ import struct
 from lcm_msgs import std_msgs
 from . import *
 from .RegionOfInterest import RegionOfInterest
-
 class CameraInfo(object):
 
     __slots__ = ["D_length", "header", "height", "width", "distortion_model", "D", "K", "R", "P", "binning_x", "binning_y", "roi"]

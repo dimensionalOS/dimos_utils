@@ -10,7 +10,6 @@ import struct
 from . import *
 from lcm_msgs import std_msgs
 from .GoalStatus import GoalStatus
-
 class GoalStatusArray(object):
 
     __slots__ = ["status_list_length", "header", "status_list"]

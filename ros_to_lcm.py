@@ -507,7 +507,7 @@ def convert_ros_msgs(input_path, output_dir=None, search_paths=None):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: final_ros_to_lcm.py <ros_msg_file_or_directory> [output_directory] [search_path1] [search_path2] ...")
+        print("Usage: ros_to_lcm.py <ros_msg_file_or_directory> [output_directory] [search_path1] [search_path2] ...")
         sys.exit(1)
     
     input_path = sys.argv[1]

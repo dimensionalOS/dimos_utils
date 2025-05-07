@@ -10,7 +10,6 @@ import struct
 from . import *
 from .InteractiveMarkerPose import InteractiveMarkerPose
 from .InteractiveMarker import InteractiveMarker
-
 class InteractiveMarkerUpdate(object):
 
     __slots__ = ["markers_length", "poses_length", "erases_length", "server_id", "seq_num", "type", "markers", "poses", "erases"]
