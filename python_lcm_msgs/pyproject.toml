@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lcm_msgs"
+version = "0.1.1"
+description = "LCM generated Python bindings for ROS based types"
+authors = [
+    {name = "Dimensional"}
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "lcm",
+    "foxglove-websocket",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/dimensional/lcm_msgs"

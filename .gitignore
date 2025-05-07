@@ -9,5 +9,6 @@ __pycache__/
 **/__pycache__/
 *.py[cod]
 *$py.class
+**/build
 
 **/.claude/settings.local.json
