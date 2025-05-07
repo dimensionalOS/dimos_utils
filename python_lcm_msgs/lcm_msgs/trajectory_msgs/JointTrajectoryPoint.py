@@ -7,11 +7,12 @@ DO NOT MODIFY BY HAND!!!!
 from io import BytesIO
 import struct
 
+from lcm_msgs import std_msgs
 class JointTrajectoryPoint(object):
 
     __slots__ = ["positions_length", "velocities_length", "accelerations_length", "effort_length", "positions", "velocities", "accelerations", "effort", "time_from_start"]
 
-    __typenames__ = ["int32_t", "int32_t", "int32_t", "int32_t", "double", "double", "double", "double", "int64_t"]
+    __typenames__ = ["int32_t", "int32_t", "int32_t", "int32_t", "double", "double", "double", "double", "std_msgs.Duration"]
 
     __dimensions__ = [None, None, None, None, ["positions_length"], ["velocities_length"], ["accelerations_length"], ["effort_length"], None]
 
@@ -32,8 +33,8 @@ class JointTrajectoryPoint(object):
         """ LCM Type: double[accelerations_length] """
         self.effort = []
         """ LCM Type: double[effort_length] """
-        self.time_from_start = 0
-        """ LCM Type: int64_t """
+        self.time_from_start = std_msgs.Duration()
+        """ LCM Type: std_msgs.Duration """
 
     def encode(self):
         buf = BytesIO()
@@ -47,7 +48,8 @@ class JointTrajectoryPoint(object):
         buf.write(struct.pack('>%dd' % self.velocities_length, *self.velocities[:self.velocities_length]))
         buf.write(struct.pack('>%dd' % self.accelerations_length, *self.accelerations[:self.accelerations_length]))
         buf.write(struct.pack('>%dd' % self.effort_length, *self.effort[:self.effort_length]))
-        buf.write(struct.pack(">q", self.time_from_start))
+        assert self.time_from_start._get_packed_fingerprint() == std_msgs.Duration._get_packed_fingerprint()
+        self.time_from_start._encode_one(buf)
 
     @staticmethod
     def decode(data: bytes):
@@ -67,13 +69,14 @@ class JointTrajectoryPoint(object):
         self.velocities = struct.unpack('>%dd' % self.velocities_length, buf.read(self.velocities_length * 8))
         self.accelerations = struct.unpack('>%dd' % self.accelerations_length, buf.read(self.accelerations_length * 8))
         self.effort = struct.unpack('>%dd' % self.effort_length, buf.read(self.effort_length * 8))
-        self.time_from_start = struct.unpack(">q", buf.read(8))[0]
+        self.time_from_start = std_msgs.Duration._decode_one(buf)
         return self
 
     @staticmethod
     def _get_hash_recursive(parents):
         if JointTrajectoryPoint in parents: return 0
-        tmphash = (0xd8632dd8f90c6ecb) & 0xffffffffffffffff
+        newparents = parents + [JointTrajectoryPoint]
+        tmphash = (0x5f17dcae9da98292+ std_msgs.Duration._get_hash_recursive(newparents)) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _packed_fingerprint = None

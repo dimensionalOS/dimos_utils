@@ -13,7 +13,7 @@ class Marker(object):
 
     __slots__ = ["points_length", "colors_length", "header", "ns", "id", "type", "action", "pose", "scale", "color", "lifetime", "frame_locked", "points", "colors", "text", "mesh_resource", "mesh_use_embedded_materials"]
 
-    __typenames__ = ["int32_t", "int32_t", "std_msgs.Header", "string", "int32_t", "int32_t", "int32_t", "geometry_msgs.Pose", "geometry_msgs.Vector3", "std_msgs.ColorRGBA", "int64_t", "boolean", "geometry_msgs.Point", "std_msgs.ColorRGBA", "string", "string", "boolean"]
+    __typenames__ = ["int32_t", "int32_t", "std_msgs.Header", "string", "int32_t", "int32_t", "int32_t", "geometry_msgs.Pose", "geometry_msgs.Vector3", "std_msgs.ColorRGBA", "std_msgs.Duration", "boolean", "geometry_msgs.Point", "std_msgs.ColorRGBA", "string", "string", "boolean"]
 
     __dimensions__ = [None, None, None, None, None, None, None, None, None, None, None, None, ["points_length"], ["colors_length"], None, None, None]
 
@@ -55,8 +55,8 @@ class Marker(object):
         """ LCM Type: geometry_msgs.Vector3 """
         self.color = std_msgs.ColorRGBA()
         """ LCM Type: std_msgs.ColorRGBA """
-        self.lifetime = 0
-        """ LCM Type: int64_t """
+        self.lifetime = std_msgs.Duration()
+        """ LCM Type: std_msgs.Duration """
         self.frame_locked = False
         """ LCM Type: boolean """
         self.points = []
@@ -91,7 +91,9 @@ class Marker(object):
         self.scale._encode_one(buf)
         assert self.color._get_packed_fingerprint() == std_msgs.ColorRGBA._get_packed_fingerprint()
         self.color._encode_one(buf)
-        buf.write(struct.pack(">qb", self.lifetime, self.frame_locked))
+        assert self.lifetime._get_packed_fingerprint() == std_msgs.Duration._get_packed_fingerprint()
+        self.lifetime._encode_one(buf)
+        buf.write(struct.pack(">b", self.frame_locked))
         for i0 in range(self.points_length):
             assert self.points[i0]._get_packed_fingerprint() == geometry_msgs.Point._get_packed_fingerprint()
             self.points[i0]._encode_one(buf)
@@ -129,7 +131,7 @@ class Marker(object):
         self.pose = geometry_msgs.Pose._decode_one(buf)
         self.scale = geometry_msgs.Vector3._decode_one(buf)
         self.color = std_msgs.ColorRGBA._decode_one(buf)
-        self.lifetime = struct.unpack(">q", buf.read(8))[0]
+        self.lifetime = std_msgs.Duration._decode_one(buf)
         self.frame_locked = bool(struct.unpack('b', buf.read(1))[0])
         self.points = []
         for i0 in range(self.points_length):
@@ -148,7 +150,7 @@ class Marker(object):
     def _get_hash_recursive(parents):
         if Marker in parents: return 0
         newparents = parents + [Marker]
-        tmphash = (0x4f8478eeef770f28+ std_msgs.Header._get_hash_recursive(newparents)+ geometry_msgs.Pose._get_hash_recursive(newparents)+ geometry_msgs.Vector3._get_hash_recursive(newparents)+ std_msgs.ColorRGBA._get_hash_recursive(newparents)+ geometry_msgs.Point._get_hash_recursive(newparents)+ std_msgs.ColorRGBA._get_hash_recursive(newparents)) & 0xffffffffffffffff
+        tmphash = (0x707e24d8bc038bd3+ std_msgs.Header._get_hash_recursive(newparents)+ geometry_msgs.Pose._get_hash_recursive(newparents)+ geometry_msgs.Vector3._get_hash_recursive(newparents)+ std_msgs.ColorRGBA._get_hash_recursive(newparents)+ std_msgs.Duration._get_hash_recursive(newparents)+ geometry_msgs.Point._get_hash_recursive(newparents)+ std_msgs.ColorRGBA._get_hash_recursive(newparents)) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _packed_fingerprint = None

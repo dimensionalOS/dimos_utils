@@ -9,15 +9,15 @@ import struct
 
 from . import *
 from lcm_msgs import builtin_interfaces
-from .ArrowPrimitive import ArrowPrimitive
 from .CylinderPrimitive import CylinderPrimitive
+from .TriangleListPrimitive import TriangleListPrimitive
 from .KeyValuePair import KeyValuePair
+from .SpherePrimitive import SpherePrimitive
+from .ArrowPrimitive import ArrowPrimitive
 from .TextPrimitive import TextPrimitive
 from .CubePrimitive import CubePrimitive
-from .LinePrimitive import LinePrimitive
-from .SpherePrimitive import SpherePrimitive
-from .TriangleListPrimitive import TriangleListPrimitive
 from .ModelPrimitive import ModelPrimitive
+from .LinePrimitive import LinePrimitive
 class SceneEntity(object):
 
     __slots__ = ["metadata_length", "arrows_length", "cubes_length", "spheres_length", "cylinders_length", "lines_length", "triangles_length", "texts_length", "models_length", "timestamp", "frame_id", "id", "lifetime", "frame_locked", "metadata", "arrows", "cubes", "spheres", "cylinders", "lines", "triangles", "texts", "models"]

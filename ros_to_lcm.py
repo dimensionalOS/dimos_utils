@@ -69,8 +69,6 @@ def convert_ros_type_to_lcm(ros_type, known_types=None, dependencies=None):
         'float32': 'float',
         'float64': 'double',
         'string': 'string',
-        'time': 'int64_t',    # Simplification (could be a struct)
-        'duration': 'int64_t',  # Simplification (could be a struct)
         'char': 'byte',       # deprecated ROS type
         'byte': 'int8_t',     # deprecated ROS type
     }
@@ -101,6 +99,15 @@ def convert_ros_type_to_lcm(ros_type, known_types=None, dependencies=None):
     if ros_type == 'Header':
         dependencies.add('std_msgs/Header')
         return 'std_msgs.Header'
+        
+    # Handle time and duration types
+    if ros_type == 'time':
+        dependencies.add('std_msgs/Time')
+        return 'std_msgs.Time'
+        
+    if ros_type == 'duration':
+        dependencies.add('std_msgs/Duration')
+        return 'std_msgs.Duration'
     
     # Check for custom message type with package
     if '/' in ros_type:

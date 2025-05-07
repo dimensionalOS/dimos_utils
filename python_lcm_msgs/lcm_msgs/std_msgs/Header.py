@@ -7,19 +7,21 @@ DO NOT MODIFY BY HAND!!!!
 from io import BytesIO
 import struct
 
+from . import *
+from .Time import Time
 class Header(object):
 
     __slots__ = ["seq", "stamp", "frame_id"]
 
-    __typenames__ = ["int32_t", "int64_t", "string"]
+    __typenames__ = ["int32_t", "Time", "string"]
 
     __dimensions__ = [None, None, None]
 
     def __init__(self):
         self.seq = 0
         """ LCM Type: int32_t """
-        self.stamp = 0
-        """ LCM Type: int64_t """
+        self.stamp = Time()
+        """ LCM Type: Time """
         self.frame_id = ""
         """ LCM Type: string """
 
@@ -30,7 +32,9 @@ class Header(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">iq", self.seq, self.stamp))
+        buf.write(struct.pack(">i", self.seq))
+        assert self.stamp._get_packed_fingerprint() == Time._get_packed_fingerprint()
+        self.stamp._encode_one(buf)
         __frame_id_encoded = self.frame_id.encode('utf-8')
         buf.write(struct.pack('>I', len(__frame_id_encoded)+1))
         buf.write(__frame_id_encoded)
@@ -49,7 +53,8 @@ class Header(object):
     @staticmethod
     def _decode_one(buf):
         self = Header()
-        self.seq, self.stamp = struct.unpack(">iq", buf.read(12))
+        self.seq = struct.unpack(">i", buf.read(4))[0]
+        self.stamp = Time._decode_one(buf)
         __frame_id_len = struct.unpack('>I', buf.read(4))[0]
         self.frame_id = buf.read(__frame_id_len)[:-1].decode('utf-8', 'replace')
         return self
@@ -57,7 +62,8 @@ class Header(object):
     @staticmethod
     def _get_hash_recursive(parents):
         if Header in parents: return 0
-        tmphash = (0xc91376e81efc25d8) & 0xffffffffffffffff
+        newparents = parents + [Header]
+        tmphash = (0xdbb33f5b4c19b8ea+ Time._get_hash_recursive(newparents)) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _packed_fingerprint = None

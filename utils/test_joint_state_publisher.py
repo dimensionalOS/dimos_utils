@@ -10,6 +10,9 @@ def update_positions():
     for i, slider in enumerate(sliders):
         msg.position[i] = slider.get()
     
+    # Update header timestamp
+    msg.header.stamp.sec = int(time.time())
+    msg.header.stamp.nsec = int((time.time() - int(time.time())) * 1e9)
     # Publish the updated joint state
     lc.publish("joint_states#sensor_msgs.JointState", msg.encode())
     
@@ -29,6 +32,9 @@ def randomize_positions():
 
 # Create the LCM message
 msg = JointState()
+msg.header.stamp.sec = int(time.time())
+msg.header.stamp.nsec = int((time.time() - int(time.time())) * 1e9)
+msg.header.frame_id = "base_link"
 msg.name = ["pillar_platform_joint", "pan_tilt_pan_joint", "pan_tilt_head_joint", "joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7", "joint8"]
 msg.position = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 msg.velocity = []  # Empty list by default

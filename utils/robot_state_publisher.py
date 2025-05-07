@@ -432,7 +432,8 @@ class RobotStatePublisher:
         # Create a timestamp
         header = Header()
         header.seq = 0  # Sequence number
-        header.stamp = int(time.time())  # Seconds since epoch (integer required)
+        header.stamp.sec = int(time.time())  # Seconds since epoch (integer required)
+        header.stamp.nsec = int((time.time() - int(time.time())) * 1e9)
         header.frame_id = self.fixed_frame
         return header
     

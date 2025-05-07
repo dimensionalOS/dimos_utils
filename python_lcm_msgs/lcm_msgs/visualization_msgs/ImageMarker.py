@@ -13,7 +13,7 @@ class ImageMarker(object):
 
     __slots__ = ["points_length", "outline_colors_length", "header", "ns", "id", "type", "action", "position", "scale", "outline_color", "filled", "fill_color", "lifetime", "points", "outline_colors"]
 
-    __typenames__ = ["int32_t", "int32_t", "std_msgs.Header", "string", "int32_t", "int32_t", "int32_t", "geometry_msgs.Point", "float", "std_msgs.ColorRGBA", "byte", "std_msgs.ColorRGBA", "int64_t", "geometry_msgs.Point", "std_msgs.ColorRGBA"]
+    __typenames__ = ["int32_t", "int32_t", "std_msgs.Header", "string", "int32_t", "int32_t", "int32_t", "geometry_msgs.Point", "float", "std_msgs.ColorRGBA", "byte", "std_msgs.ColorRGBA", "std_msgs.Duration", "geometry_msgs.Point", "std_msgs.ColorRGBA"]
 
     __dimensions__ = [None, None, None, None, None, None, None, None, None, None, None, None, None, ["points_length"], ["outline_colors_length"]]
 
@@ -50,8 +50,8 @@ class ImageMarker(object):
         """ LCM Type: byte """
         self.fill_color = std_msgs.ColorRGBA()
         """ LCM Type: std_msgs.ColorRGBA """
-        self.lifetime = 0
-        """ LCM Type: int64_t """
+        self.lifetime = std_msgs.Duration()
+        """ LCM Type: std_msgs.Duration """
         self.points = []
         """ LCM Type: geometry_msgs.Point[points_length] """
         self.outline_colors = []
@@ -80,7 +80,8 @@ class ImageMarker(object):
         buf.write(struct.pack(">B", self.filled))
         assert self.fill_color._get_packed_fingerprint() == std_msgs.ColorRGBA._get_packed_fingerprint()
         self.fill_color._encode_one(buf)
-        buf.write(struct.pack(">q", self.lifetime))
+        assert self.lifetime._get_packed_fingerprint() == std_msgs.Duration._get_packed_fingerprint()
+        self.lifetime._encode_one(buf)
         for i0 in range(self.points_length):
             assert self.points[i0]._get_packed_fingerprint() == geometry_msgs.Point._get_packed_fingerprint()
             self.points[i0]._encode_one(buf)
@@ -111,7 +112,7 @@ class ImageMarker(object):
         self.outline_color = std_msgs.ColorRGBA._decode_one(buf)
         self.filled = struct.unpack(">B", buf.read(1))[0]
         self.fill_color = std_msgs.ColorRGBA._decode_one(buf)
-        self.lifetime = struct.unpack(">q", buf.read(8))[0]
+        self.lifetime = std_msgs.Duration._decode_one(buf)
         self.points = []
         for i0 in range(self.points_length):
             self.points.append(geometry_msgs.Point._decode_one(buf))
@@ -124,7 +125,7 @@ class ImageMarker(object):
     def _get_hash_recursive(parents):
         if ImageMarker in parents: return 0
         newparents = parents + [ImageMarker]
-        tmphash = (0x685239d3e017d986+ std_msgs.Header._get_hash_recursive(newparents)+ geometry_msgs.Point._get_hash_recursive(newparents)+ std_msgs.ColorRGBA._get_hash_recursive(newparents)+ std_msgs.ColorRGBA._get_hash_recursive(newparents)+ geometry_msgs.Point._get_hash_recursive(newparents)+ std_msgs.ColorRGBA._get_hash_recursive(newparents)) & 0xffffffffffffffff
+        tmphash = (0x3a3ea371b474d924+ std_msgs.Header._get_hash_recursive(newparents)+ geometry_msgs.Point._get_hash_recursive(newparents)+ std_msgs.ColorRGBA._get_hash_recursive(newparents)+ std_msgs.ColorRGBA._get_hash_recursive(newparents)+ std_msgs.Duration._get_hash_recursive(newparents)+ geometry_msgs.Point._get_hash_recursive(newparents)+ std_msgs.ColorRGBA._get_hash_recursive(newparents)) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _packed_fingerprint = None

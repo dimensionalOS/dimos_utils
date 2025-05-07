@@ -7,5 +7,5 @@ struct MultiDOFJointTrajectoryPoint {
     geometry_msgs.Transform transforms[transforms_length];
     geometry_msgs.Twist velocities[velocities_length];
     geometry_msgs.Twist accelerations[accelerations_length];
-    int64_t time_from_start;
+    std_msgs.Duration time_from_start;
 }

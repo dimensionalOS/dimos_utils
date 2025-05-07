@@ -12,15 +12,15 @@ class TimeReference(object):
 
     __slots__ = ["header", "time_ref", "source"]
 
-    __typenames__ = ["std_msgs.Header", "int64_t", "string"]
+    __typenames__ = ["std_msgs.Header", "std_msgs.Time", "string"]
 
     __dimensions__ = [None, None, None]
 
     def __init__(self):
         self.header = std_msgs.Header()
         """ LCM Type: std_msgs.Header """
-        self.time_ref = 0
-        """ LCM Type: int64_t """
+        self.time_ref = std_msgs.Time()
+        """ LCM Type: std_msgs.Time """
         self.source = ""
         """ LCM Type: string """
 
@@ -33,7 +33,8 @@ class TimeReference(object):
     def _encode_one(self, buf):
         assert self.header._get_packed_fingerprint() == std_msgs.Header._get_packed_fingerprint()
         self.header._encode_one(buf)
-        buf.write(struct.pack(">q", self.time_ref))
+        assert self.time_ref._get_packed_fingerprint() == std_msgs.Time._get_packed_fingerprint()
+        self.time_ref._encode_one(buf)
         __source_encoded = self.source.encode('utf-8')
         buf.write(struct.pack('>I', len(__source_encoded)+1))
         buf.write(__source_encoded)
@@ -53,7 +54,7 @@ class TimeReference(object):
     def _decode_one(buf):
         self = TimeReference()
         self.header = std_msgs.Header._decode_one(buf)
-        self.time_ref = struct.unpack(">q", buf.read(8))[0]
+        self.time_ref = std_msgs.Time._decode_one(buf)
         __source_len = struct.unpack('>I', buf.read(4))[0]
         self.source = buf.read(__source_len)[:-1].decode('utf-8', 'replace')
         return self
@@ -62,7 +63,7 @@ class TimeReference(object):
     def _get_hash_recursive(parents):
         if TimeReference in parents: return 0
         newparents = parents + [TimeReference]
-        tmphash = (0x4d37e19769f7b243+ std_msgs.Header._get_hash_recursive(newparents)) & 0xffffffffffffffff
+        tmphash = (0x1a6b1c8c5abae6db+ std_msgs.Header._get_hash_recursive(newparents)+ std_msgs.Time._get_hash_recursive(newparents)) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _packed_fingerprint = None

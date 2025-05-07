@@ -8,11 +8,12 @@ from io import BytesIO
 import struct
 
 from lcm_msgs import geometry_msgs
+from lcm_msgs import std_msgs
 class MultiDOFJointTrajectoryPoint(object):
 
     __slots__ = ["transforms_length", "velocities_length", "accelerations_length", "transforms", "velocities", "accelerations", "time_from_start"]
 
-    __typenames__ = ["int32_t", "int32_t", "int32_t", "geometry_msgs.Transform", "geometry_msgs.Twist", "geometry_msgs.Twist", "int64_t"]
+    __typenames__ = ["int32_t", "int32_t", "int32_t", "geometry_msgs.Transform", "geometry_msgs.Twist", "geometry_msgs.Twist", "std_msgs.Duration"]
 
     __dimensions__ = [None, None, None, ["transforms_length"], ["velocities_length"], ["accelerations_length"], None]
 
@@ -29,8 +30,8 @@ class MultiDOFJointTrajectoryPoint(object):
         """ LCM Type: geometry_msgs.Twist[velocities_length] """
         self.accelerations = []
         """ LCM Type: geometry_msgs.Twist[accelerations_length] """
-        self.time_from_start = 0
-        """ LCM Type: int64_t """
+        self.time_from_start = std_msgs.Duration()
+        """ LCM Type: std_msgs.Duration """
 
     def encode(self):
         buf = BytesIO()
@@ -49,7 +50,8 @@ class MultiDOFJointTrajectoryPoint(object):
         for i0 in range(self.accelerations_length):
             assert self.accelerations[i0]._get_packed_fingerprint() == geometry_msgs.Twist._get_packed_fingerprint()
             self.accelerations[i0]._encode_one(buf)
-        buf.write(struct.pack(">q", self.time_from_start))
+        assert self.time_from_start._get_packed_fingerprint() == std_msgs.Duration._get_packed_fingerprint()
+        self.time_from_start._encode_one(buf)
 
     @staticmethod
     def decode(data: bytes):
@@ -74,14 +76,14 @@ class MultiDOFJointTrajectoryPoint(object):
         self.accelerations = []
         for i0 in range(self.accelerations_length):
             self.accelerations.append(geometry_msgs.Twist._decode_one(buf))
-        self.time_from_start = struct.unpack(">q", buf.read(8))[0]
+        self.time_from_start = std_msgs.Duration._decode_one(buf)
         return self
 
     @staticmethod
     def _get_hash_recursive(parents):
         if MultiDOFJointTrajectoryPoint in parents: return 0
         newparents = parents + [MultiDOFJointTrajectoryPoint]
-        tmphash = (0x3d9c31cba8210e04+ geometry_msgs.Transform._get_hash_recursive(newparents)+ geometry_msgs.Twist._get_hash_recursive(newparents)+ geometry_msgs.Twist._get_hash_recursive(newparents)) & 0xffffffffffffffff
+        tmphash = (0x6afb214a921f4cfa+ geometry_msgs.Transform._get_hash_recursive(newparents)+ geometry_msgs.Twist._get_hash_recursive(newparents)+ geometry_msgs.Twist._get_hash_recursive(newparents)+ std_msgs.Duration._get_hash_recursive(newparents)) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _packed_fingerprint = None

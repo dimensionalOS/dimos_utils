@@ -7,17 +7,18 @@ DO NOT MODIFY BY HAND!!!!
 from io import BytesIO
 import struct
 
+from lcm_msgs import std_msgs
 class GoalID(object):
 
     __slots__ = ["stamp", "id"]
 
-    __typenames__ = ["int64_t", "string"]
+    __typenames__ = ["std_msgs.Time", "string"]
 
     __dimensions__ = [None, None]
 
     def __init__(self):
-        self.stamp = 0
-        """ LCM Type: int64_t """
+        self.stamp = std_msgs.Time()
+        """ LCM Type: std_msgs.Time """
         self.id = ""
         """ LCM Type: string """
 
@@ -28,7 +29,8 @@ class GoalID(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">q", self.stamp))
+        assert self.stamp._get_packed_fingerprint() == std_msgs.Time._get_packed_fingerprint()
+        self.stamp._encode_one(buf)
         __id_encoded = self.id.encode('utf-8')
         buf.write(struct.pack('>I', len(__id_encoded)+1))
         buf.write(__id_encoded)
@@ -47,7 +49,7 @@ class GoalID(object):
     @staticmethod
     def _decode_one(buf):
         self = GoalID()
-        self.stamp = struct.unpack(">q", buf.read(8))[0]
+        self.stamp = std_msgs.Time._decode_one(buf)
         __id_len = struct.unpack('>I', buf.read(4))[0]
         self.id = buf.read(__id_len)[:-1].decode('utf-8', 'replace')
         return self
@@ -55,7 +57,8 @@ class GoalID(object):
     @staticmethod
     def _get_hash_recursive(parents):
         if GoalID in parents: return 0
-        tmphash = (0x429e79ed3a0f1f34) & 0xffffffffffffffff
+        newparents = parents + [GoalID]
+        tmphash = (0xef36683ef0767e95+ std_msgs.Time._get_hash_recursive(newparents)) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _packed_fingerprint = None

@@ -8,17 +8,18 @@ from io import BytesIO
 import struct
 
 from lcm_msgs import geometry_msgs
+from lcm_msgs import std_msgs
 class MapMetaData(object):
 
     __slots__ = ["map_load_time", "resolution", "width", "height", "origin"]
 
-    __typenames__ = ["int64_t", "float", "int32_t", "int32_t", "geometry_msgs.Pose"]
+    __typenames__ = ["std_msgs.Time", "float", "int32_t", "int32_t", "geometry_msgs.Pose"]
 
     __dimensions__ = [None, None, None, None, None]
 
     def __init__(self):
-        self.map_load_time = 0
-        """ LCM Type: int64_t """
+        self.map_load_time = std_msgs.Time()
+        """ LCM Type: std_msgs.Time """
         self.resolution = 0.0
         """ LCM Type: float """
         self.width = 0
@@ -35,7 +36,9 @@ class MapMetaData(object):
         return buf.getvalue()
 
     def _encode_one(self, buf):
-        buf.write(struct.pack(">qfii", self.map_load_time, self.resolution, self.width, self.height))
+        assert self.map_load_time._get_packed_fingerprint() == std_msgs.Time._get_packed_fingerprint()
+        self.map_load_time._encode_one(buf)
+        buf.write(struct.pack(">fii", self.resolution, self.width, self.height))
         assert self.origin._get_packed_fingerprint() == geometry_msgs.Pose._get_packed_fingerprint()
         self.origin._encode_one(buf)
 
@@ -52,7 +55,8 @@ class MapMetaData(object):
     @staticmethod
     def _decode_one(buf):
         self = MapMetaData()
-        self.map_load_time, self.resolution, self.width, self.height = struct.unpack(">qfii", buf.read(20))
+        self.map_load_time = std_msgs.Time._decode_one(buf)
+        self.resolution, self.width, self.height = struct.unpack(">fii", buf.read(12))
         self.origin = geometry_msgs.Pose._decode_one(buf)
         return self
 
@@ -60,7 +64,7 @@ class MapMetaData(object):
     def _get_hash_recursive(parents):
         if MapMetaData in parents: return 0
         newparents = parents + [MapMetaData]
-        tmphash = (0xe2ebd83bd0081c6c+ geometry_msgs.Pose._get_hash_recursive(newparents)) & 0xffffffffffffffff
+        tmphash = (0x3245f3cdb468ba93+ std_msgs.Time._get_hash_recursive(newparents)+ geometry_msgs.Pose._get_hash_recursive(newparents)) & 0xffffffffffffffff
         tmphash  = (((tmphash<<1)&0xffffffffffffffff) + (tmphash>>63)) & 0xffffffffffffffff
         return tmphash
     _packed_fingerprint = None
