@@ -398,6 +398,108 @@ class SchemaGenerator:
         
         return schema
     
+    def _lcm_to_schema(self, topic_name, lcm_class):
+        """Dynamically generate a schema from an LCM class"""
+        schema = {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+        
+        # Get fields from LCM class
+        slots = getattr(lcm_class, "__slots__", [])
+        typenames = getattr(lcm_class, "__typenames__", [])
+        dimensions = getattr(lcm_class, "__dimensions__", [])
+        
+        if not slots or len(slots) != len(typenames):
+            logger.error(f"Cannot generate schema for {topic_name}: missing slots or typenames")
+            return None
+        
+        # First identify all length fields
+        length_fields = {}
+        for i, field in enumerate(slots):
+            if field.endswith('_length'):
+                base_field = field[:-7]  # Remove '_length' suffix
+                length_fields[base_field] = field
+        
+        # Process each field
+        for i, (field, typename) in enumerate(zip(slots, typenames)):
+            # Skip length fields, they're handled implicitly
+            if field.endswith('_length'):
+                continue
+                
+            # Get dimension info if available (for arrays)
+            dimension = dimensions[i] if i < len(dimensions) else None
+            is_array = dimension is not None and dimension != [None]
+            
+            # For known array fields, make sure we're marking them properly
+            if field in length_fields:
+                is_array = True
+            
+            # Get the JSON schema for this field
+            field_schema = self._lcm_type_to_schema(typename, field, is_array, dimension)
+            
+            if field_schema:
+                schema["properties"][field] = field_schema
+                schema["required"].append(field)
+                
+        return schema
+        
+    def _lcm_type_to_schema(self, typename, field, is_array=False, dimension=None):
+        """Convert an LCM type to a JSON schema"""
+        # Check for primitive types
+        primitive_map = {
+            "int8_t": {"type": "integer"},
+            "int16_t": {"type": "integer"},
+            "int32_t": {"type": "integer"},
+            "int64_t": {"type": "integer"},
+            "uint8_t": {"type": "integer", "minimum": 0},
+            "uint16_t": {"type": "integer", "minimum": 0},
+            "uint32_t": {"type": "integer", "minimum": 0},
+            "uint64_t": {"type": "integer", "minimum": 0},
+            "boolean": {"type": "boolean"},
+            "bool": {"type": "boolean"},  # Add 'bool' as alias for boolean
+            "float": {"type": "number"},
+            "double": {"type": "number"},
+            "string": {"type": "string"},
+            "bytes": {"type": "string", "contentEncoding": "base64"}
+        }
+        
+        # Special check for arrays with common LCM naming patterns
+        if field in ['axes', 'buttons']:
+            is_array = True
+            
+        if typename in primitive_map:
+            base_schema = primitive_map[typename]
+            
+            # Handle array type
+            if is_array:
+                # Make sure arrays are properly defined - this is crucial for Foxglove
+                return {
+                    "type": "array", 
+                    "items": base_schema,
+                    "description": f"Array of {typename} values"
+                }
+            return base_schema
+        
+        # Handle complex types
+        if "." in typename:
+            # This is a complex type reference, like 'std_msgs.Header'
+            # For these, we'll create a reference to their schema
+            if is_array:
+                return {
+                    "type": "array", 
+                    "items": {"type": "object"},
+                    "description": f"Array of {typename} objects"
+                }
+            return {"type": "object", "description": f"Object of type {typename}"}
+        
+        # If we get here, we don't know how to handle the type
+        logger.warning(f"Unknown LCM type {typename} for field {field}")
+        if is_array:
+            return {"type": "array", "items": {"type": "object"}, "description": f"Array of unknown type: {typename}"}
+        return {"type": "object", "description": f"Unknown type: {typename}"}  # Fallback
+    
     def _convert_type_to_schema(self, field_type, package_name, is_array=False, array_size=None):
         """Convert a ROS field type to a JSON schema type"""
         # Check for primitive types
@@ -613,50 +715,56 @@ class MessageConverter:
         elif isinstance(msg, bytes):
             # Convert bytes to base64
             return base64.b64encode(msg).decode("ascii")
-        elif isinstance(msg, list):
+        elif isinstance(msg, list) or isinstance(msg, tuple):
+            # Handle array case - this is the key change
+            # For foxglove visualization, arrays need to have proper format
+            # Return as a simple array of converted values rather than an object with numeric keys
             return [self._lcm_to_dict(item) for item in msg]
         elif isinstance(msg, dict):
             return {k: self._lcm_to_dict(v) for k, v in msg.items()}
+        elif isinstance(msg, np.ndarray):
+            # Handle numpy arrays - convert to list first
+            return [self._lcm_to_dict(item) for item in msg.tolist()]
         else:
             # Try to convert a custom LCM message object
             result = {}
             
             # First gather all attributes and their types
             attribute_info = {}
+            length_fields = {}
+            
+            # First pass: identify all length fields and their values
             for attr in dir(msg):
                 if attr.startswith('_') or callable(getattr(msg, attr)):
                     continue
-                    
-                # Store attribute and check if it's a length field
+                
+                # Check for length fields
                 if attr.endswith('_length'):
                     base_attr = attr[:-7]  # Remove '_length' suffix
-                    attribute_info[base_attr] = attribute_info.get(base_attr, {})
-                    attribute_info[base_attr]['has_length'] = True
-                    attribute_info[base_attr]['length_value'] = getattr(msg, attr)
-                else:
-                    attribute_info[attr] = attribute_info.get(attr, {})
-                    attribute_info[attr]['value'] = getattr(msg, attr)
+                    length_value = getattr(msg, attr)
+                    length_fields[base_attr] = length_value
             
-            # Process the gathered attributes
-            for attr, info in attribute_info.items():
-                if 'value' not in info:
-                    continue  # Skip length-only entries
-                    
+            # Second pass: process all attributes
+            for attr in dir(msg):
+                if attr.startswith('_') or callable(getattr(msg, attr)) or attr.endswith('_length'):
+                    continue
+                
+                value = getattr(msg, attr)
+                
+                # Handle arrays with corresponding length fields
+                if attr in length_fields and (isinstance(value, list) or isinstance(value, tuple)):
+                    length = length_fields[attr]
+                    if isinstance(length, int) and length >= 0 and length <= len(value):
+                        # Truncate array to specified length
+                        value = value[:length]
+                
+                # Recursively convert the value
                 try:
-                    value = info['value']
-                    
-                    # Handle arrays with corresponding length fields
-                    if info.get('has_length', False) and isinstance(value, list):
-                        length = info['length_value']
-                        if isinstance(length, int) and length >= 0 and length <= len(value):
-                            value = value[:length]
-                    
-                    # Recursively convert the value
                     result[attr] = self._lcm_to_dict(value)
                 except Exception as e:
                     logger.error(f"Error converting attribute {attr}: {e}")
                     result[attr] = None
-                    
+            
             return result
     
     def _get_header_dict(self, header):
