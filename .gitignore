@@ -10,5 +10,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 **/build
+.vscode
 
 **/.claude/settings.local.json

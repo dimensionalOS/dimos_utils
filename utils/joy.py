@@ -39,7 +39,11 @@ class JoyNode:
         self.joy = None
         self.joystick_id = 0
         self.config = None
-        self.lc = lcm.LCM()
+        
+        # Initialize LCM with a specific provider URL to avoid network issues
+        # Use 'udpm://239.255.76.67:7667?ttl=1' for standard multicast
+        # Or use 'file:/dev/null' for local-only connections with better reliability
+        self.lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=1")
         
         # Initialize pygame for joystick handling
         pygame.init()
