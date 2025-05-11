@@ -36,14 +36,14 @@ add_library(tf_lcm
 target_link_libraries(tf_lcm lcm lcm-coretypes)
 
 # Add Python bindings
-pybind11_add_module(tf_lcm_py python/tf_lcm_pybind.cpp)
-target_link_libraries(tf_lcm_py PRIVATE tf_lcm)
+pybind11_add_module(_tf_lcm_py python/tf_lcm_pybind.cpp)
+target_link_libraries(_tf_lcm_py PRIVATE tf_lcm)
 
 # Install targets
-install(TARGETS tf_lcm tf_lcm_py
+install(TARGETS tf_lcm _tf_lcm_py
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
+  RUNTIME DESTINATION lib/python3/site-packages/tf_lcm_py
 )
 
 # Install headers

@@ -1,21 +1,33 @@
 #!/usr/bin/env python3
 """
 Example of broadcasting transforms using the tf_lcm Python bindings
+
+This example demonstrates:
+1. Setting up an LCM instance for tf_lcm
+2. Creating a TransformBroadcaster
+3. Running LCM message handling in a background thread
+4. Publishing transforms between coordinate frames
+5. Creating a dynamic transform tree
+
+Run this example alongside the listener example to see it working.
 """
 
 import time
 import datetime
 import sys
 import os
-import lcm
+import threading
 import numpy as np
 
 # Add the parent directory to the path so we can import the module
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import LCM message types
+# Import LCM message types (these are Python generated bindings for LCM messages)
 from lcm_msgs.geometry_msgs import TransformStamped, Transform, Vector3, Quaternion
 from lcm_msgs.std_msgs import Header
+
+# Add extra path for finding the LCM module
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "build"))
 
 # Import tf_lcm module (assumes the library has been built and installed)
 import tf_lcm_py
@@ -39,8 +51,29 @@ def quaternion_from_euler(roll, pitch, yaw):
     
     return q
 
+def lcm_handler_thread(lcm_instance):
+    """Thread function to handle LCM messages"""
+    try:
+        while True:
+            # Handle LCM messages with a timeout of 100ms
+            lcm_instance.handle_timeout(100)
+    except KeyboardInterrupt:
+        pass
+
 def main():
     print("TF_LCM Broadcaster Example")
+    
+    # Create an LCM instance
+    lcm_instance = tf_lcm_py.LCM()
+    
+    if not lcm_instance.good():
+        print("Failed to initialize LCM")
+        return 1
+    
+    # Start a thread to handle LCM messages in the background
+    handler_thread = threading.Thread(target=lcm_handler_thread, args=(lcm_instance,))
+    handler_thread.daemon = True  # Set as daemon so it exits when the main thread exits
+    handler_thread.start()
     
     # Create a broadcaster
     broadcaster = tf_lcm_py.TransformBroadcaster()
@@ -116,6 +149,7 @@ def main():
             
     except KeyboardInterrupt:
         print("Broadcaster stopped")
+        return 0
 
 if __name__ == "__main__":
     main()
