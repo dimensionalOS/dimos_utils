@@ -126,39 +126,170 @@ while True:
 
 #### Option 2: Using the Built-in LCM Wrapper
 
-You can also use the built-in LCM wrapper and TransformListener class:
+You can also use the built-in LCM wrapper and TransformListener class. This approach simplifies the code but requires careful resource management to avoid segmentation faults and socket errors. Here's the recommended pattern:
 
 ```python
 import tf_lcm_py
 import threading
 import datetime
 import lcm_msgs
+import signal
+import sys
+from contextlib import contextmanager
 
-# Create an LCM instance
-lcm_instance = tf_lcm_py.LCM()
+# Context manager for safely managing LCM instance lifecycle
+@contextmanager
+def safe_lcm_instance():
+    """Context manager for safely managing LCM instance lifecycle"""
+    # Try multiple provider URLs to find one that works
+    provider_urls = [
+        None,  # Default
+        "udpm://localhost:7667",
+        "file:///tmp/lcm-log.data",
+        "memq://"
+    ]
+    
+    lcm_instance = None
+    for provider in provider_urls:
+        try:
+            if provider is None:
+                lcm_instance = tf_lcm_py.LCM()
+            else:
+                lcm_instance = tf_lcm_py.LCM(provider)
+            
+            if lcm_instance.good():
+                print(f"Successfully initialized LCM with provider: {provider if provider else 'default'}")
+                break
+            else:
+                print(f"LCM initialized but not in good state with provider: {provider if provider else 'default'}")
+                lcm_instance = None
+        except Exception as e:
+            print(f"Failed to initialize LCM with provider {provider}: {e}")
+    
+    if lcm_instance is None:
+        print("WARNING: Could not initialize any LCM provider, using fallback")
+        lcm_instance = tf_lcm_py.LCM("null://")
+    
+    try:
+        yield lcm_instance
+    finally:
+        # Keeping a reference until the end of the context ensures proper cleanup
+        pass
 
-# Set up a background thread for message handling
-def lcm_handler_thread(lcm):
-    while True:
-        lcm.handle_timeout(100)  # 100ms timeout
+# Track resources for proper cleanup
+resources_to_cleanup = []
 
-handler_thread = threading.Thread(target=lcm_handler_thread, args=(lcm_instance,))
-handler_thread.daemon = True
-handler_thread.start()
+# Cleanup function to explicitly release resources
+def cleanup_resources():
+    # Clean up resources in reverse order (last created first)
+    for resource in reversed(resources_to_cleanup):
+        try:
+            # For objects like TransformListener that might have close/shutdown methods
+            if hasattr(resource, 'close'):
+                resource.close()
+            elif hasattr(resource, 'shutdown'):
+                resource.shutdown()
+            
+            # Explicitly delete the resource
+            del resource
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
+    
+    # Clear the resources list
+    resources_to_cleanup.clear()
 
-# Create a buffer
+# Signal handler for graceful termination
+def signal_handler(sig, frame):
+    print("\nInterrupt received, cleaning up...")
+    cleanup_resources()
+    sys.exit(1)
+
+# Register signal handlers
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
+
+# Create resources in a specific order
 buffer = tf_lcm_py.Buffer(10.0)  # 10 seconds cache time
+resources_to_cleanup.append(buffer)
 
-# Create a listener attached to the buffer
-listener = tf_lcm_py.TransformListener(lcm_instance, buffer)
+# Use context manager for LCM instance
+with safe_lcm_instance() as lcm_instance:
+    resources_to_cleanup.append(lcm_instance)
+    
+    # Create a listener attached to the buffer
+    listener = tf_lcm_py.TransformListener(lcm_instance, buffer)
+    resources_to_cleanup.append(listener)
+    
+    # For continuous operation, set up a background thread
+    def lcm_handler_thread(lcm):
+        try:
+            while True:
+                try:
+                    # Handle timeouts and check if LCM is still healthy
+                    if not lcm.handle_timeout(100):  # 100ms timeout
+                        if not lcm.good():
+                            print("WARNING: LCM instance is no longer in a good state")
+                except Exception as e:
+                    print(f"Error in LCM handler thread: {e}")
+        except KeyboardInterrupt:
+            # Thread will exit when the main thread is terminated
+            pass
 
-# Now you can look up transforms
-try:
-    transform = buffer.lookup_transform("world", "robot", datetime.datetime.now())
-    print(f"Position: {transform.transform.translation.x}, {transform.transform.translation.y}, {transform.transform.translation.z}")
-except tf_lcm_py.TransformException as e:
-    print(f"Transform lookup failed: {e}")
+    # Start handler thread
+    handler_thread = threading.Thread(target=lcm_handler_thread, args=(lcm_instance,))
+    handler_thread.daemon = True  # Thread will exit when main thread exits
+    handler_thread.start()
+    
+    # Now you can look up transforms safely
+    try:
+        # Main application loop
+        while True:
+            try:
+                now = datetime.datetime.now()
+                
+                # Check if transform is available
+                if buffer.can_transform("world", "robot", now):
+                    # Look up the transform
+                    transform = buffer.lookup_transform("world", "robot", now, lcm_module=lcm_msgs)
+                    
+                    # Process the transform data
+                    print(f"Position: ({transform.transform.translation.x:.6f}, "
+                          f"{transform.transform.translation.y:.6f}, "
+                          f"{transform.transform.translation.z:.6f})")
+                
+                # Add application-specific logic here
+                
+            except tf_lcm_py.TransformException as e:
+                print(f"Transform lookup failed: {e}")
+            
+            # Sleep to avoid consuming too much CPU
+            time.sleep(0.1)
+            
+    except KeyboardInterrupt:
+        print("\nUser interrupted, shutting down...")
+    finally:
+        # Always clean up resources when exiting
+        print("Cleaning up resources...")
+        cleanup_resources()
 ```
+
+### Important Resource Management Considerations
+
+When using the built-in LCM wrapper, it's critical to follow these best practices to avoid segmentation faults and socket errors:
+
+1. **Proper Resource Initialization**: Create resources in the right order (Buffer -> LCM -> TransformListener) and track them for cleanup.
+
+2. **Context Managers**: Use context managers for LCM instances to handle initialization failures gracefully.
+
+3. **Explicit Resource Cleanup**: Always clean up resources in reverse order of creation when your application exits.
+
+4. **Signal Handling**: Register signal handlers to ensure proper cleanup on unexpected termination.
+
+5. **Error Handling**: Wrap LCM operations in try/except blocks to handle network errors gracefully.
+
+6. **Resource Tracking**: Keep references to all resources to prevent premature garbage collection.
+
+Following these patterns will help you avoid common issues like segmentation faults at program exit and socket initialization errors.
 
 ### Broadcasting Transforms
 
