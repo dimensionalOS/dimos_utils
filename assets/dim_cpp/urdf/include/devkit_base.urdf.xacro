@@ -108,7 +108,7 @@
 
         <link name="pan_tilt_head">
             <visual>
-                <origin xyz="0 -.1325 -1.6465" rpy="0 0 0" />
+                <origin xyz="0 -.1325 -1.659" rpy="0 0 0" />
                 <geometry>
                     <mesh filename="${file_prefix}/meshes/devkit_base/pan_tilt_head_collision.stl" scale="1 1 1"/>
                 </geometry>
@@ -117,7 +117,7 @@
                 </material>
             </visual>
             <collision>
-                <origin xyz="0 -.1325 -1.6465" rpy="0 0 0" />
+                <origin xyz="0 -.1325 -1.659" rpy="0 0 0" />
                 <geometry>
                     <mesh filename="${file_prefix}/meshes/devkit_base/pan_tilt_head_collision.stl" scale="1 1 1"/>
                 </geometry>
@@ -130,9 +130,17 @@
         <joint name="pan_tilt_head_joint" type="revolute">
             <parent link="pan_tilt_pan" />
             <child link="pan_tilt_head" />
-            <origin xyz="0 0 1.6465" rpy="0 0 0" />
+            <origin xyz="0 0 1.659" rpy="0 0 0" />
             <axis xyz="1 0 0" />
             <limit lower="-1.57" upper="1.57" effort="100" velocity="1"/>
+        </joint>
+
+        <link name="camera_center_link" />
+
+        <joint name="camera_center_joint" type="fixed">
+            <parent link="pan_tilt_head" />
+            <child link="camera_center_link" />
+            <origin xyz="0 0.027 .057055" rpy="0 0 0" />
         </joint>
 
         <link name="pillar_platform">

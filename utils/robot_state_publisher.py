@@ -446,7 +446,7 @@ def main():
     parser = argparse.ArgumentParser(description='LCM Robot State Publisher')
     parser.add_argument('--urdf', type=str, help='Path to URDF file')
     parser.add_argument('--fixed-frame', type=str, default='world', help='Name of the fixed frame')
-    parser.add_argument('--rate', type=float, default=30.0, help='Publishing rate in Hz')
+    parser.add_argument('--rate', type=float, default=50.0, help='Publishing rate in Hz')
     parser.add_argument('--enforce-limits', type=bool, default=True, help='Enforce joint limits from URDF')
     
     args = parser.parse_args()

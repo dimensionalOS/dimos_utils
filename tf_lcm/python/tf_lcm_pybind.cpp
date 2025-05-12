@@ -3,6 +3,7 @@
 #include <pybind11/chrono.h>
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
+#include <iostream>
 #include <lcm/lcm-cpp.hpp>
 #include "tf_lcm/buffer.hpp"
 #include "tf_lcm/broadcaster.hpp"
@@ -14,7 +15,50 @@ namespace py = pybind11;
 // Wrapper for lcm::LCM to make it work with Python
 class PyLCM : public lcm::LCM {
 public:
-    using lcm::LCM::LCM;  // Inherit constructors
+    // Default constructor with multiple fallback options for local communication
+    PyLCM() {
+        // Try to initialize with different providers in order of preference
+        const char* providers[] = {
+            nullptr,                      // Default provider
+            "udpm://localhost:7667",     // Localhost UDP multicast
+            "file:///tmp/lcm-log.data",  // File-based provider
+            "memq://",                   // Memory queue provider
+        };
+        
+        bool success = false;
+        for (const char* provider : providers) {
+            try {
+                if (provider) {
+                    std::cerr << "Trying LCM provider: " << provider << std::endl;
+                    new (this) lcm::LCM(provider);  // Placement new to reinitialize
+                } else {
+                    std::cerr << "Trying default LCM provider" << std::endl;
+                    new (this) lcm::LCM();
+                }
+                
+                if (good()) {
+                    std::cerr << "LCM initialization succeeded" << std::endl;
+                    success = true;
+                    break;
+                }
+            } catch (const std::exception& e) {
+                std::cerr << "LCM initialization failed: " << e.what() << std::endl;
+            }
+        }
+        
+        if (!success) {
+            std::cerr << "All LCM providers failed, creating dummy instance" << std::endl;
+            // Create a non-functional but non-crashing instance
+            new (this) lcm::LCM("null://");
+        }
+    }
+    
+    // Constructor with explicit URL
+    PyLCM(const std::string& url) : lcm::LCM(url) {
+        if (!good()) {
+            std::cerr << "LCM initialization with URL " << url << " failed" << std::endl;
+        }
+    }
     
     // Python-friendly handle method that can be called from Python
     void handle() {
@@ -291,9 +335,22 @@ PYBIND11_MODULE(_tf_lcm_py, m) {
     py::class_<tf_lcm::TransformListener>(m, "TransformListener")
         .def(py::init<double>(), py::arg("buffer_size") = 10.0)
         .def(py::init<tf_lcm::Buffer&>(), py::arg("buffer"))
-        .def(py::init([](PyLCM& lcm, tf_lcm::Buffer& buffer) {
-            // Convert PyLCM to std::shared_ptr<lcm::LCM>
-            std::shared_ptr<lcm::LCM> lcm_ptr(&lcm, [](lcm::LCM*) {});
+        .def(py::init([](py::object py_lcm_obj, tf_lcm::Buffer& buffer) {
+            // Keep a reference to the Python LCM object to prevent garbage collection
+            // while the TransformListener is active
+            py_lcm_obj.inc_ref();
+            
+            // Get the raw pointer to the PyLCM object
+            PyLCM* py_lcm_ptr = py_lcm_obj.cast<PyLCM*>();
+            
+            // Create a shared_ptr with a custom deleter that decrements the Python reference
+            // when the shared_ptr is destroyed
+            std::shared_ptr<lcm::LCM> lcm_ptr(py_lcm_ptr, [py_lcm_obj](lcm::LCM*) mutable {
+                // This will be called when the shared_ptr is destroyed
+                py::gil_scoped_acquire gil;  // Acquire GIL before touching Python objects
+                py_lcm_obj.dec_ref();
+            });
+            
             return new tf_lcm::TransformListener(lcm_ptr, buffer);
         }), py::arg("lcm"), py::arg("buffer"))
         .def("get_buffer", static_cast<tf_lcm::Buffer& (tf_lcm::TransformListener::*)()>(&tf_lcm::TransformListener::getBuffer), 

@@ -17,8 +17,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
 
 # Import the standard message headers
-from std_msgs.Header import Header
-from sensor_msgs.Image import Image
+from lcm_msgs.std_msgs import Header
+from lcm_msgs.sensor_msgs import Image
 
 def cv2_to_sensor_msgs_image(cv_image, encoding="bgr8", seq=0):
     """
@@ -38,7 +38,8 @@ def cv2_to_sensor_msgs_image(cv_image, encoding="bgr8", seq=0):
     # Create a header
     img_msg.header = Header()
     img_msg.header.seq = seq
-    img_msg.header.stamp = int(time.time() * 1e9)  # Current time in nanoseconds
+    img_msg.header.stamp.sec = int(time.time())
+    img_msg.header.stamp.nsec = int(0)
     img_msg.header.frame_id = "world"
     
     # Set image properties
@@ -169,7 +170,7 @@ def main():
     parser = argparse.ArgumentParser(description='Publish video frames as LCM sensor_msgs/Image messages')
     parser.add_argument('video_path', help='Path to the MP4 file')
     parser.add_argument('topic_name', help='LCM topic name to publish on')
-    parser.add_argument('--fps', type=float, default=30.0, help='Frames per second to publish (default: 30)')
+    parser.add_argument('--fps', type=float, default=60.0, help='Frames per second to publish (default: 60)')
     parser.add_argument('--no-loop', action='store_false', dest='loop', help='Do not loop the video')
     parser.add_argument('--frames', type=int, default=60, help='Number of frames to use (default: 60)')
     parser.add_argument('--color', choices=['bgr8', 'rgb8', 'bgra8'], default='bgr8', 
