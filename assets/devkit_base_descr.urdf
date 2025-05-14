@@ -17,7 +17,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/devkit_base_wheels_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -26,7 +26,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/devkit_base_wheels_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -47,7 +47,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_base_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_base_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -56,7 +56,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_base_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_base_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -72,7 +72,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 -.1325 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_pan_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_pan_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -81,7 +81,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 -.1325 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_pan_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_pan_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -99,7 +99,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 -.1325 -1.659"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_head_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_head_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -108,7 +108,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 -.1325 -1.659"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_head_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_head_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -132,7 +132,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pillar_platform_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pillar_platform_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -141,7 +141,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pillar_platform_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pillar_platform_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -164,7 +164,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/piper_angled_mount_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/piper_angled_mount_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -173,7 +173,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/piper_angled_mount_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/piper_angled_mount_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -205,7 +205,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/base_link.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/base_link.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -214,7 +214,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/base_link.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/base_link.obj"/>
       </geometry>
     </collision>
   </link>
@@ -227,7 +227,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link1.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link1.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -236,7 +236,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link1.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link1.obj"/>
       </geometry>
     </collision>
   </link>
@@ -256,7 +256,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link2.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link2.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -265,7 +265,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link2.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link2.obj"/>
       </geometry>
     </collision>
   </link>
@@ -286,7 +286,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link3.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link3.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -295,7 +295,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link3.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link3.obj"/>
       </geometry>
     </collision>
   </link>
@@ -316,7 +316,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link4.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link4.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -325,7 +325,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link4.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link4.obj"/>
       </geometry>
     </collision>
   </link>
@@ -345,7 +345,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link5.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link5.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -354,7 +354,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link5.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link5.obj"/>
       </geometry>
     </collision>
   </link>
@@ -374,7 +374,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link6.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link6.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
@@ -383,7 +383,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link6.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link6.obj"/>
       </geometry>
     </collision>
   </link>
@@ -403,7 +403,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/gripper_base.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/gripper_base.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -412,7 +412,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/gripper_base.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/gripper_base.obj"/>
       </geometry>
     </collision>
   </link>
@@ -430,7 +430,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link7.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link7.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -439,7 +439,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link7.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link7.obj"/>
       </geometry>
     </collision>
   </link>
@@ -459,7 +459,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link8.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link8.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -468,7 +468,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link8.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link8.obj"/>
       </geometry>
     </collision>
   </link>
