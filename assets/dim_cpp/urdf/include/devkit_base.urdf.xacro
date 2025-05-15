@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 
 <robot name="devkit_base"
-    xmlns:xacro="http://ros.org/wiki/xacro">
+    xmlns:xacro="http://ros.org/wiki/xacro"
+    xmlns:drake="http://drake.mit.edu">
 
     <xacro:macro name="devkit_base"
         params="base_frame base_pos_x base_pos_y base_pos_z  base_roll base_pitch base_yaw prefix:='' r:=0.8 g:=0.8 b:=0.8 a:=1.0 fixed:=false">
@@ -28,20 +29,523 @@
                     <color rgba="${r} ${g} ${b} ${a}" />
                 </material>
             </visual>
-            <collision>
-                <origin xyz="0 0 0" rpy="0 0 0" />
-                <geometry>
-                    <mesh filename="${file_prefix}/meshes/devkit_base/devkit_base_wheels_collision.stl" scale="1 1 1"/>
-                </geometry>
-                <material name="mat">
-                    <color rgba="${r} ${g} ${b} ${a}" />
-                </material>
-            </collision>
             <inertial>
                 <mass value="45"/>
                 <inertia  ixx="12.732327" ixy="0" ixz="0" iyy="12.513553" iyz="0" izz="1.8057749" />
                 <origin xyz=".225 -.2125 .9125" rpy="0 0 0" />
             </inertial>
+            <collision name="collision_0000">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_000.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0001">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_001.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0002">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_002.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0003">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_003.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0004">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_004.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0005">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_005.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0006">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_006.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0007">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_007.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0008">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_008.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0009">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_009.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0010">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_010.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0011">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_011.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0012">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_012.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0013">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_013.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0014">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_014.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0015">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_015.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0016">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_016.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0017">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_017.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0018">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_018.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0019">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_019.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0020">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_020.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0021">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_021.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0022">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_022.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0023">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_023.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0024">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_024.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0025">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_025.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0026">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_026.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0027">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_027.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0028">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_028.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0029">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_029.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0030">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_030.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0031">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_031.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0032">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_032.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0033">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_033.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0034">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_034.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0035">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_035.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0036">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_036.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0037">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_037.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0038">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_038.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0039">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_039.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0040">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_040.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0041">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_041.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0042">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_042.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0043">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_043.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0044">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_044.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0045">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_045.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0046">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_046.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0047">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_047.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0048">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_048.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0049">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_049.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0050">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_050.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0051">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_051.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0052">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_052.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0053">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_053.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0054">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_054.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0055">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_055.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0056">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_056.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0057">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_057.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0058">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_058.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0059">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_059.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0060">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_060.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0061">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_061.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0062">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_062.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
+            <collision name="collision_0063">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_063.obj">
+                <drake:declare_convex/>
+                </mesh>
+            </geometry>
+            </collision>
         </link>
 
         <joint name="base_center_joint" type="fixed">

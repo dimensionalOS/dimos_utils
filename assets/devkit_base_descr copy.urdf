@@ -17,7 +17,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/devkit_base_wheels_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -29,7 +29,7 @@
       <origin rpy="0 0 0" xyz=".225 -.2125 .9125"/>
     </inertial>
     <collision name="collision_0000">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_000.obj">
           <drake:declare_convex/>
@@ -37,7 +37,7 @@
       </geometry>
     </collision>
     <collision name="collision_0001">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_001.obj">
           <drake:declare_convex/>
@@ -45,7 +45,7 @@
       </geometry>
     </collision>
     <collision name="collision_0002">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_002.obj">
           <drake:declare_convex/>
@@ -53,7 +53,7 @@
       </geometry>
     </collision>
     <collision name="collision_0003">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_003.obj">
           <drake:declare_convex/>
@@ -61,7 +61,7 @@
       </geometry>
     </collision>
     <collision name="collision_0004">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_004.obj">
           <drake:declare_convex/>
@@ -69,7 +69,7 @@
       </geometry>
     </collision>
     <collision name="collision_0005">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_005.obj">
           <drake:declare_convex/>
@@ -77,7 +77,7 @@
       </geometry>
     </collision>
     <collision name="collision_0006">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_006.obj">
           <drake:declare_convex/>
@@ -85,7 +85,7 @@
       </geometry>
     </collision>
     <collision name="collision_0007">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_007.obj">
           <drake:declare_convex/>
@@ -93,7 +93,7 @@
       </geometry>
     </collision>
     <collision name="collision_0008">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_008.obj">
           <drake:declare_convex/>
@@ -101,7 +101,7 @@
       </geometry>
     </collision>
     <collision name="collision_0009">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_009.obj">
           <drake:declare_convex/>
@@ -109,7 +109,7 @@
       </geometry>
     </collision>
     <collision name="collision_0010">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_010.obj">
           <drake:declare_convex/>
@@ -117,7 +117,7 @@
       </geometry>
     </collision>
     <collision name="collision_0011">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_011.obj">
           <drake:declare_convex/>
@@ -125,7 +125,7 @@
       </geometry>
     </collision>
     <collision name="collision_0012">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_012.obj">
           <drake:declare_convex/>
@@ -133,7 +133,7 @@
       </geometry>
     </collision>
     <collision name="collision_0013">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_013.obj">
           <drake:declare_convex/>
@@ -141,7 +141,7 @@
       </geometry>
     </collision>
     <collision name="collision_0014">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_014.obj">
           <drake:declare_convex/>
@@ -149,7 +149,7 @@
       </geometry>
     </collision>
     <collision name="collision_0015">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_015.obj">
           <drake:declare_convex/>
@@ -157,7 +157,7 @@
       </geometry>
     </collision>
     <collision name="collision_0016">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_016.obj">
           <drake:declare_convex/>
@@ -165,7 +165,7 @@
       </geometry>
     </collision>
     <collision name="collision_0017">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_017.obj">
           <drake:declare_convex/>
@@ -173,7 +173,7 @@
       </geometry>
     </collision>
     <collision name="collision_0018">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_018.obj">
           <drake:declare_convex/>
@@ -181,7 +181,7 @@
       </geometry>
     </collision>
     <collision name="collision_0019">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_019.obj">
           <drake:declare_convex/>
@@ -189,7 +189,7 @@
       </geometry>
     </collision>
     <collision name="collision_0020">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_020.obj">
           <drake:declare_convex/>
@@ -197,7 +197,7 @@
       </geometry>
     </collision>
     <collision name="collision_0021">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_021.obj">
           <drake:declare_convex/>
@@ -205,7 +205,7 @@
       </geometry>
     </collision>
     <collision name="collision_0022">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_022.obj">
           <drake:declare_convex/>
@@ -213,7 +213,7 @@
       </geometry>
     </collision>
     <collision name="collision_0023">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_023.obj">
           <drake:declare_convex/>
@@ -221,7 +221,7 @@
       </geometry>
     </collision>
     <collision name="collision_0024">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_024.obj">
           <drake:declare_convex/>
@@ -229,7 +229,7 @@
       </geometry>
     </collision>
     <collision name="collision_0025">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_025.obj">
           <drake:declare_convex/>
@@ -237,7 +237,7 @@
       </geometry>
     </collision>
     <collision name="collision_0026">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_026.obj">
           <drake:declare_convex/>
@@ -245,7 +245,7 @@
       </geometry>
     </collision>
     <collision name="collision_0027">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_027.obj">
           <drake:declare_convex/>
@@ -253,7 +253,7 @@
       </geometry>
     </collision>
     <collision name="collision_0028">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_028.obj">
           <drake:declare_convex/>
@@ -261,7 +261,7 @@
       </geometry>
     </collision>
     <collision name="collision_0029">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_029.obj">
           <drake:declare_convex/>
@@ -269,7 +269,7 @@
       </geometry>
     </collision>
     <collision name="collision_0030">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_030.obj">
           <drake:declare_convex/>
@@ -277,7 +277,7 @@
       </geometry>
     </collision>
     <collision name="collision_0031">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_031.obj">
           <drake:declare_convex/>
@@ -285,7 +285,7 @@
       </geometry>
     </collision>
     <collision name="collision_0032">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_032.obj">
           <drake:declare_convex/>
@@ -293,7 +293,7 @@
       </geometry>
     </collision>
     <collision name="collision_0033">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_033.obj">
           <drake:declare_convex/>
@@ -301,7 +301,7 @@
       </geometry>
     </collision>
     <collision name="collision_0034">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_034.obj">
           <drake:declare_convex/>
@@ -309,7 +309,7 @@
       </geometry>
     </collision>
     <collision name="collision_0035">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_035.obj">
           <drake:declare_convex/>
@@ -317,7 +317,7 @@
       </geometry>
     </collision>
     <collision name="collision_0036">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_036.obj">
           <drake:declare_convex/>
@@ -325,7 +325,7 @@
       </geometry>
     </collision>
     <collision name="collision_0037">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_037.obj">
           <drake:declare_convex/>
@@ -333,7 +333,7 @@
       </geometry>
     </collision>
     <collision name="collision_0038">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_038.obj">
           <drake:declare_convex/>
@@ -341,7 +341,7 @@
       </geometry>
     </collision>
     <collision name="collision_0039">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_039.obj">
           <drake:declare_convex/>
@@ -349,7 +349,7 @@
       </geometry>
     </collision>
     <collision name="collision_0040">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_040.obj">
           <drake:declare_convex/>
@@ -357,7 +357,7 @@
       </geometry>
     </collision>
     <collision name="collision_0041">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_041.obj">
           <drake:declare_convex/>
@@ -365,7 +365,7 @@
       </geometry>
     </collision>
     <collision name="collision_0042">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_042.obj">
           <drake:declare_convex/>
@@ -373,7 +373,7 @@
       </geometry>
     </collision>
     <collision name="collision_0043">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_043.obj">
           <drake:declare_convex/>
@@ -381,7 +381,7 @@
       </geometry>
     </collision>
     <collision name="collision_0044">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_044.obj">
           <drake:declare_convex/>
@@ -389,7 +389,7 @@
       </geometry>
     </collision>
     <collision name="collision_0045">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_045.obj">
           <drake:declare_convex/>
@@ -397,7 +397,7 @@
       </geometry>
     </collision>
     <collision name="collision_0046">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_046.obj">
           <drake:declare_convex/>
@@ -405,7 +405,7 @@
       </geometry>
     </collision>
     <collision name="collision_0047">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_047.obj">
           <drake:declare_convex/>
@@ -413,7 +413,7 @@
       </geometry>
     </collision>
     <collision name="collision_0048">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_048.obj">
           <drake:declare_convex/>
@@ -421,7 +421,7 @@
       </geometry>
     </collision>
     <collision name="collision_0049">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_049.obj">
           <drake:declare_convex/>
@@ -429,7 +429,7 @@
       </geometry>
     </collision>
     <collision name="collision_0050">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_050.obj">
           <drake:declare_convex/>
@@ -437,7 +437,7 @@
       </geometry>
     </collision>
     <collision name="collision_0051">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_051.obj">
           <drake:declare_convex/>
@@ -445,7 +445,7 @@
       </geometry>
     </collision>
     <collision name="collision_0052">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_052.obj">
           <drake:declare_convex/>
@@ -453,7 +453,7 @@
       </geometry>
     </collision>
     <collision name="collision_0053">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_053.obj">
           <drake:declare_convex/>
@@ -461,7 +461,7 @@
       </geometry>
     </collision>
     <collision name="collision_0054">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_054.obj">
           <drake:declare_convex/>
@@ -469,7 +469,7 @@
       </geometry>
     </collision>
     <collision name="collision_0055">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_055.obj">
           <drake:declare_convex/>
@@ -477,7 +477,7 @@
       </geometry>
     </collision>
     <collision name="collision_0056">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_056.obj">
           <drake:declare_convex/>
@@ -485,7 +485,7 @@
       </geometry>
     </collision>
     <collision name="collision_0057">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_057.obj">
           <drake:declare_convex/>
@@ -493,7 +493,7 @@
       </geometry>
     </collision>
     <collision name="collision_0058">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_058.obj">
           <drake:declare_convex/>
@@ -501,7 +501,7 @@
       </geometry>
     </collision>
     <collision name="collision_0059">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_059.obj">
           <drake:declare_convex/>
@@ -509,7 +509,7 @@
       </geometry>
     </collision>
     <collision name="collision_0060">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_060.obj">
           <drake:declare_convex/>
@@ -517,7 +517,7 @@
       </geometry>
     </collision>
     <collision name="collision_0061">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_061.obj">
           <drake:declare_convex/>
@@ -525,7 +525,7 @@
       </geometry>
     </collision>
     <collision name="collision_0062">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_062.obj">
           <drake:declare_convex/>
@@ -533,7 +533,7 @@
       </geometry>
     </collision>
     <collision name="collision_0063">
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="dim_cpp/meshes/devkit_base/devkit_base_wheels_parts/devkit_base_wheels_convex_piece_063.obj">
           <drake:declare_convex/>
@@ -550,7 +550,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_base_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_base_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -559,7 +559,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_base_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_base_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -575,7 +575,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 -.1325 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_pan_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_pan_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -584,7 +584,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 -.1325 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_pan_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_pan_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -602,7 +602,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 -.1325 -1.659"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_head_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_head_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -611,7 +611,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 -.1325 -1.659"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pan_tilt_head_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pan_tilt_head_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -635,7 +635,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pillar_platform_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pillar_platform_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -644,7 +644,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/pillar_platform_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/pillar_platform_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -667,7 +667,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/piper_angled_mount_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/piper_angled_mount_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -676,7 +676,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/meshes/devkit_base/piper_angled_mount_collision.stl" scale="1 1 1"/>
+        <mesh filename="dim_cpp/meshes/devkit_base/piper_angled_mount_collision.obj" scale="1 1 1"/>
       </geometry>
       <material name="mat">
         <color rgba="0.8 0.8 0.8 1.0"/>
@@ -708,7 +708,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/base_link.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/base_link.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -717,7 +717,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/base_link.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/base_link.obj"/>
       </geometry>
     </collision>
   </link>
@@ -730,7 +730,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link1.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link1.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -739,7 +739,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link1.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link1.obj"/>
       </geometry>
     </collision>
   </link>
@@ -759,7 +759,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link2.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link2.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -768,7 +768,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link2.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link2.obj"/>
       </geometry>
     </collision>
   </link>
@@ -789,7 +789,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link3.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link3.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -798,7 +798,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link3.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link3.obj"/>
       </geometry>
     </collision>
   </link>
@@ -819,7 +819,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link4.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link4.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -828,7 +828,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link4.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link4.obj"/>
       </geometry>
     </collision>
   </link>
@@ -848,7 +848,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link5.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link5.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -857,7 +857,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link5.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link5.obj"/>
       </geometry>
     </collision>
   </link>
@@ -877,7 +877,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link6.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link6.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1"/>
@@ -886,7 +886,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link6.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link6.obj"/>
       </geometry>
     </collision>
   </link>
@@ -906,7 +906,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/gripper_base.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/gripper_base.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -915,7 +915,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/gripper_base.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/gripper_base.obj"/>
       </geometry>
     </collision>
   </link>
@@ -933,7 +933,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link7.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link7.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -942,7 +942,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link7.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link7.obj"/>
       </geometry>
     </collision>
   </link>
@@ -962,7 +962,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link8.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link8.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -971,7 +971,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://dim_cpp/piper_description/meshes/link8.STL"/>
+        <mesh filename="dim_cpp/piper_description/meshes/link8.obj"/>
       </geometry>
     </collision>
   </link>
@@ -982,6 +982,7 @@
     <axis xyz="0 0 -1"/>
     <limit effort="10" lower="-0.035" upper="0" velocity="1"/>
   </joint>
+
   <drake:collision_filter_group name="no_collide">
     <drake:member link="base_center"/>
     <drake:member link="devkit_base_link"/>

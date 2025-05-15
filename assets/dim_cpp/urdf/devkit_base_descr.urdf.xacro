@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
-<robot name="devkit_base_descr" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="devkit_base_descr" 
+	xmlns:xacro="http://ros.org/wiki/xacro"
+	xmlns:drake="http://drake.mit.edu">
+	
 	<xacro:arg name="base_frame" default="world"/>
 	
 	<xacro:include filename="$(find dim_cpp)/urdf/include/devkit_base.urdf.xacro" />
@@ -11,5 +14,11 @@
 	<xacro:piper_angled_base base_frame="pillar_platform" base_pos_x="0.0" base_pos_y="0.0" base_pos_z="0.0" base_roll="0.0" base_pitch="0.0" base_yaw="0.0" r="0.8" g="0.8" b="0.8" a="1.0" />
 	<xacro:piper_arm base_frame="piper_angled_mount" base_pos_x="0.0" base_pos_y="0.292645" base_pos_z="1.42886" base_roll="0.0" base_pitch="0.7854" base_yaw="1.5707" r="0.8" g="0.8" b="0.8" a="1.0" />	
 
-
+	<drake:collision_filter_group name="no_collide">
+		<drake:member link="base_center"/>
+		<drake:member link="devkit_base_link"/>
+		<drake:member link="pillar_platform"/>
+		<drake:member link="piper_angled_mount"/>
+		<drake:ignored_collision_filter_group name="no_collide"/>
+  </drake:collision_filter_group>
 </robot>
