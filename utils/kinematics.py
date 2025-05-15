@@ -17,10 +17,11 @@ from pydrake.all import (
     PiecewisePolynomial, TrajectorySource, 
     Simulator, RotationMatrix, RollPitchYaw, SpatialVelocity,
     AutoDiffXd, AddMultibodyPlantSceneGraph, JacobianWrtVariable,
-    FindResourceOrThrow, eq, ge, le, GeometryInstance, Sphere,
+    FindResourceOrThrow, eq, ge, le, GeometryInstance, Sphere, Box,
     MakePhongIllustrationProperties, Rgba, CollisionFilterDeclaration,
-    MeshcatVisualizer, StartMeshcat
+    MeshcatVisualizer, StartMeshcat, CoulombFriction
 )
+from pydrake.multibody.tree import BodyIndex
 from octree_collision import OctreeNode, Octree
 from tqdm import tqdm
 
@@ -60,7 +61,6 @@ class Kinematics:
         self.plant, self.scene_graph = AddMultibodyPlantSceneGraph(self.builder, time_step=0.0)
         
         # Initialize bounding box plant for collision checking
-        from pydrake.multibody.tree import BodyIndex as LocalBodyIndex
         self.bbox_builder = DiagramBuilder()
         self.bbox_plant, self.bbox_scene_graph = AddMultibodyPlantSceneGraph(self.bbox_builder, time_step=0.0)
 
@@ -163,6 +163,9 @@ class Kinematics:
         # rather than adding to the scene graph (which is already finalized)
         if self.point_cloud is not None and len(self.point_cloud) > 0:
             print(f"Using {len(self.point_cloud)} points for collision detection with radius {self.point_cloud_radius}m")
+            # Visualize the point cloud in Meshcat
+            if self.visualize and self.meshcat:
+                self.visualize_point_cloud()
         
         # Set up visualization default view
         if self.visualize and self.meshcat:
@@ -252,7 +255,7 @@ class Kinematics:
         body_count = self.bbox_plant.num_bodies()
         for i in range(body_count):
             try:
-                body = self.bbox_plant.get_body(LocalBodyIndex(i))
+                body = self.bbox_plant.get_body(BodyIndex(i))
                 if body.index() == self.bbox_plant.world_body().index():
                     continue
                 body_pose = self.bbox_plant.EvalBodyPoseInWorld(self.bbox_plant_context, body)
@@ -421,11 +424,14 @@ class Kinematics:
         self.set_joint_positions(q)
         
         # Get end effector pose
-        end_effector_pose = self.plant.EvalBodyPoseInWorld(self.diagram_context, self.end_effector_body)
+        end_effector_pose = self.plant.EvalBodyPoseInWorld(self.plant_context, self.end_effector_body)
         
-        if visualize:
-            self.meshcat.SetTransform("end_effector", end_effector_pose)
-            self.meshcat.Freeze()
+        if visualize and self.visualize and self.meshcat:
+            # Update the visualization - force a fresh draw to ensure visibility
+            self.diagram.ForcedPublish(self.diagram_context)
+            
+            # Add a small delay to allow visualization to render
+            time.sleep(0.1)
         
         return end_effector_pose
     
@@ -463,8 +469,8 @@ class Kinematics:
                 friction = CoulombFriction(0.9, 0.8)
                 
                 # Register as collision geometry
-                region_id = self.plant.RegisterCollisionGeometry(
-                    self.plant.world_body(),
+                region_id = self.pc_plant.RegisterCollisionGeometry(
+                    self.pc_plant.world_body(),
                     RigidTransform(center),
                     sphere,
                     instance_name,
@@ -484,8 +490,8 @@ class Kinematics:
                 friction = CoulombFriction(0.9, 0.8)
                 
                 # Register as collision geometry
-                region_id = self.plant.RegisterCollisionGeometry(
-                    self.plant.world_body(),
+                region_id = self.pc_plant.RegisterCollisionGeometry(
+                    self.pc_plant.world_body(),
                     RigidTransform(center),
                     box,
                     instance_name,
@@ -536,69 +542,71 @@ class Kinematics:
         print(f"Number of potentially colliding points: {len(potentially_colliding_points)}")
         print(f"Number of collision pairs: {len(collision_pairs)}")
         
+        # If no potentially colliding points are found, return an empty set
+        if len(potentially_colliding_points) == 0:
+            return set()
         
         # Narrow Phase Collision Detection
-        if len(potentially_colliding_points) > 0:
-            print("\nPerforming narrow-phase collision detection on candidate points...")
-            narrow_sphere_radius = 0.005
-            narrow_point_to_id = {}
+        print("\nPerforming narrow-phase collision detection on candidate points...")
+        narrow_sphere_radius = 0.005
+        narrow_point_to_id = {}
+        
+        for i, (point_idx, point_coords) in enumerate(points_to_check):
+            sphere = Sphere(narrow_sphere_radius)
+            instance_name = f"narrow_point_{i}"
+            friction = CoulombFriction(0.9, 0.8)
             
-            for i, (point_idx, point_coords) in enumerate(points_to_check):
-                sphere = Sphere(narrow_sphere_radius)
-                instance_name = f"narrow_point_{i}"
-                friction = CoulombFriction(0.9, 0.8)
-                
-                sphere_id = self.narrow_plant.RegisterCollisionGeometry(
-                    self.narrow_plant.world_body(),
-                    RigidTransform(point_coords),
-                    sphere,
-                    instance_name,
-                    friction
-                )
-                
-                narrow_point_to_id[point_idx] = sphere_id
+            sphere_id = self.narrow_plant.RegisterCollisionGeometry(
+                self.narrow_plant.world_body(),
+                RigidTransform(point_coords),
+                sphere,
+                instance_name,
+                friction
+            )
             
-            self.narrow_plant.Finalize()
+            narrow_point_to_id[point_idx] = sphere_id
+        
+        self.narrow_plant.Finalize()
 
-            self.narrow_diagram = self.narrow_builder.Build()
-            self.narrow_simulator = Simulator(self.narrow_diagram)
-            self.narrow_context = self.narrow_simulator.get_mutable_context()
-            self.narrow_plant_context = self.narrow_plant.GetMyContextFromRoot(self.narrow_context)
-            
-            # Set the joint positions
-            narrow_full_q = self.narrow_plant.GetPositions(self.narrow_plant_context)
-            for i, idx in enumerate(self.joint_indices):
-                narrow_full_q[idx] = q[i]
-            self.narrow_plant.SetPositions(self.narrow_plant_context, narrow_full_q)
+        self.narrow_diagram = self.narrow_builder.Build()
+        self.narrow_simulator = Simulator(self.narrow_diagram)
+        self.narrow_context = self.narrow_simulator.get_mutable_context()
+        self.narrow_plant_context = self.narrow_plant.GetMyContextFromRoot(self.narrow_context)
+        
+        # Set the joint positions
+        narrow_full_q = self.narrow_plant.GetPositions(self.narrow_plant_context)
+        for i, idx in enumerate(self.joint_indices):
+            narrow_full_q[idx] = q[i]
+        self.narrow_plant.SetPositions(self.narrow_plant_context, narrow_full_q)
 
-            narrow_query_object = self.narrow_scene_graph.get_query_output_port().Eval(
-                self.narrow_scene_graph.GetMyContextFromRoot(self.narrow_context))
+        narrow_query_object = self.narrow_scene_graph.get_query_output_port().Eval(
+            self.narrow_scene_graph.GetMyContextFromRoot(self.narrow_context))
 
-            point_id_to_idx = {sphere_id: point_idx for point_idx, sphere_id in narrow_point_to_id.items()}
+        point_id_to_idx = {sphere_id: point_idx for point_idx, sphere_id in narrow_point_to_id.items()}
 
-            narrow_collision_pairs = narrow_query_object.ComputePointPairPenetration()
-            colliding_points = set()
-            for pair in narrow_collision_pairs:
-                geom_A = pair.id_A
-                geom_B = pair.id_B
-                penetration = pair.depth
-                if geom_A in point_id_to_idx:
-                    point_idx = point_id_to_idx[geom_A]
-                    colliding_points.add(point_idx)
-                    print(f"  Point {point_idx} collides with penetration depth {penetration:.6f}")
-                if geom_B in point_id_to_idx:
-                    point_idx = point_id_to_idx[geom_B]
-                    colliding_points.add(point_idx)
-                    print(f"  Point {point_idx} collides with penetration depth {penetration:.6f}")
-            
-            print(f"Found {len(colliding_points)} colliding points")
+        narrow_collision_pairs = narrow_query_object.ComputePointPairPenetration()
+        colliding_points = set()
+        for pair in narrow_collision_pairs:
+            geom_A = pair.id_A
+            geom_B = pair.id_B
+            penetration = pair.depth
+            if geom_A in point_id_to_idx:
+                point_idx = point_id_to_idx[geom_A]
+                colliding_points.add(point_idx)
+                print(f"  Point {point_idx} collides with penetration depth {penetration:.6f}")
+            if geom_B in point_id_to_idx:
+                point_idx = point_id_to_idx[geom_B]
+                colliding_points.add(point_idx)
+                print(f"  Point {point_idx} collides with penetration depth {penetration:.6f}")
+        
+        print(f"Found {len(colliding_points)} colliding points")
 
-            print("Narrow phase collision detection done")
-            print(f"Narrow phase eliminated {len(potentially_colliding_points) - len(colliding_points)} false positives")
+        print("Narrow phase collision detection done")
+        print(f"Narrow phase eliminated {len(potentially_colliding_points) - len(colliding_points)} false positives")
 
-            # TODO: Potentially add visualization logic here
+        # TODO: Potentially add visualization logic here
 
-            return colliding_points
+        return colliding_points
 
             
 
@@ -735,26 +743,38 @@ class Kinematics:
         self_collisions = self.check_self_collisions()
         
         # Now check point cloud collisions with our custom method
-        point_cloud_collisions = self.check_pc_collisions_octree()
+        # Pass the current joint positions (q) to the method
+        point_cloud_collisions = self.check_pc_collisions_octree(q)
         
-        # # Print point cloud collisions for debugging
-        # if point_cloud_collisions:
-        #     print(f"Found {len(point_cloud_collisions)} point cloud collisions:")
-        #     for col in point_cloud_collisions:
-        #         print(f"  Collision between robot link '{col['body_name']}' and point cloud point {col['point_index']}")
-        #         print(f"    Penetration depth: {col['depth']:.6f}")
-        #         print(f"    Link position: {col['link_pos']}")
-        #         print(f"    Point position: {col['point_pos']}")
+        # Visualize colliding points if there are any
+        if self.visualize and self.meshcat and point_cloud_collisions and len(point_cloud_collisions) > 0:
+            # Clear any previous colliding points visualization
+            try:
+                self.meshcat.Delete("/colliding_points")
+            except:
+                pass
+            
+            # Visualize the new colliding points
+            self.visualize_colliding_points(point_cloud_collisions)
         
+        # Handle the case where point_cloud_collisions might be False
+        if point_cloud_collisions is False:
+            pc_collision_count = 0
+            pc_collision_free = True
+        else:
+            pc_collision_count = len(point_cloud_collisions)
+            pc_collision_free = pc_collision_count == 0
+            
         # Return results
         info = {
             "success": success,
             "iterations": iteration + 1,
             "position_error": final_pos_error,
             "rotation_error": rot_error_final,
-            "collision_free": len(self_collisions) == 0 and len(point_cloud_collisions) == 0,
+            "collision_free": len(self_collisions) == 0 and pc_collision_free,
             "num_collisions": len(self_collisions),
-            "point_cloud_collisions": len(point_cloud_collisions)
+            "point_cloud_collisions": pc_collision_count,
+            "colliding_points": point_cloud_collisions if isinstance(point_cloud_collisions, set) else set()
         }
         
         return q, info
@@ -787,6 +807,150 @@ class Kinematics:
         
         # We want alignment to be 1, so error is 1 - alignment
         return [1.0 - alignment]
+
+    def visualize_point_cloud(self):
+        """Visualize the point cloud in Meshcat."""
+        if not self.visualize or not self.meshcat or self.point_cloud is None:
+            return
+        
+        # Clear existing point cloud markers
+        try:
+            self.meshcat.Delete("/point_cloud")
+        except:
+            pass
+        
+        # Create an orange color for point cloud points (semi-transparent)
+        orange = np.array([1.0, 0.55, 0.0, 0.5])  # RGBA format - semi-transparent orange
+        
+        # Limit number of points to visualize for performance
+        max_points = 1000
+        points_to_visualize = min(len(self.point_cloud), max_points)
+        
+        print(f"Visualizing {points_to_visualize} points in the point cloud...")
+        
+        # Calculate sampling interval if we need to downsample for visualization
+        sampling_interval = max(1, len(self.point_cloud) // max_points)
+        
+        # Add points to meshcat
+        for i in range(0, len(self.point_cloud), sampling_interval):
+            if i >= max_points:
+                break
+                
+            point = self.point_cloud[i]
+            marker_name = f"/point_cloud/point_{i}"
+            
+            # Create a small sphere for each point
+            self.meshcat.SetObject(
+                marker_name,
+                Sphere(self.point_cloud_radius),  # Use the collision radius
+                Rgba(orange[0], orange[1], orange[2], orange[3])
+            )
+            
+            # Position the marker at the point location
+            self.meshcat.SetTransform(marker_name, RigidTransform(point))
+        
+        print(f"Visualized {points_to_visualize} point cloud points in orange")
+        
+    def visualize_colliding_points(self, colliding_point_indices):
+        """Visualize colliding points in the point cloud with red color.
+        
+        Args:
+            colliding_point_indices: Set or list of indices of colliding points in the point cloud
+        """
+        if not self.visualize or not self.meshcat or self.point_cloud is None or not colliding_point_indices:
+            return
+        
+        # Create a bright red color for colliding points
+        red = np.array([1.0, 0.0, 0.0, 0.8])  # RGBA format - semi-transparent red
+        
+        print(f"Visualizing {len(colliding_point_indices)} colliding points in the point cloud...")
+        
+        # Add colliding points to meshcat
+        for idx in colliding_point_indices:
+            point = self.point_cloud[idx]
+            marker_name = f"/colliding_points/point_{idx}"
+            
+            # Create a slightly larger red sphere for colliding points
+            self.meshcat.SetObject(
+                marker_name,
+                Sphere(self.point_cloud_radius * 1.5),  # Slightly larger for visibility
+                Rgba(red[0], red[1], red[2], red[3])
+            )
+            
+            # Position the marker at the point location
+            self.meshcat.SetTransform(marker_name, RigidTransform(point))
+        
+        print(f"Highlighted {len(colliding_point_indices)} colliding points in red")
+    
+    def visualize_collision_points(self, collision_pairs):
+        """Visualize collision points in red.
+        
+        Args:
+            collision_pairs: List of collision pairs from check_self_collisions or from get_collision_geometry_names
+        """
+        if not self.visualize or not self.meshcat:
+            return
+            
+        # Clear existing collision markers
+        try:
+            self.meshcat.Delete("/collision_markers")
+        except:
+            pass
+            
+        # Create a bright red color for collision points
+        red = np.array([1.0, 0.0, 0.0, 1.0])  # RGBA format - bright red
+        
+        # Counter for marker naming
+        marker_count = 0
+        
+        # Process dictionary-format collision pairs (from get_collision_geometry_names)
+        if collision_pairs and isinstance(collision_pairs[0], dict):
+            for collision in collision_pairs:
+                # Extract position information from frame_A and frame_B
+                for frame_info in [collision['frame_A'], collision['frame_B']]:
+                    if 'Position' in frame_info:
+                        # Extract the position vector using a simple regex-like approach
+                        pos_str = frame_info.split('Position ')[1]
+                        if pos_str.startswith('[') and ']' in pos_str:
+                            pos_str = pos_str[1:pos_str.find(']')]
+                            try:
+                                # Convert string representation to numpy array
+                                pos_values = [float(x) for x in pos_str.split()]
+                                if len(pos_values) == 3:
+                                    position = np.array(pos_values)
+                                    
+                                    # Create a small red sphere at the collision point
+                                    marker_name = f"/collision_markers/point_{marker_count}"
+                                    self.meshcat.SetObject(marker_name, 
+                                                   Sphere(0.01),  # Small sphere
+                                                   Rgba(red[0], red[1], red[2], red[3]))
+                                    # Position the marker at the collision point
+                                    self.meshcat.SetTransform(marker_name, RigidTransform(position))
+                                    marker_count += 1
+                            except:
+                                pass  # Skip if we can't parse the position
+        
+        # Process raw collision pairs (from check_self_collisions)
+        else:
+            for pair in collision_pairs:
+                # Get the collision points
+                points = []
+                if hasattr(pair, 'p_WCa') and pair.p_WCa is not None:
+                    points.append(pair.p_WCa)
+                if hasattr(pair, 'p_WCb') and pair.p_WCb is not None:
+                    points.append(pair.p_WCb)
+                    
+                # Add a marker for each point
+                for point in points:
+                    marker_name = f"/collision_markers/point_{marker_count}"
+                    self.meshcat.SetObject(marker_name, 
+                                   Sphere(0.01),  # Small sphere
+                                   Rgba(red[0], red[1], red[2], red[3]))
+                    # Position the marker at the collision point
+                    self.meshcat.SetTransform(marker_name, RigidTransform(point))
+                    marker_count += 1
+        
+        print(f"Visualized {marker_count} collision points in red")
 
 def load_and_downsample_pointcloud(file_path, voxel_size=None, sample_ratio=None):
     """Load and optionally downsample a point cloud.
@@ -840,9 +1004,11 @@ def main():
     urdf_path = os.path.abspath(urdf_path)
     end_effector_link = "link6"
     kinematic_chain_joints = ["pillar_platform_joint", "joint1", "joint2", "joint3", "joint4", "joint5", "joint6"]
+    point_cloud_path = "sample_wall.pcd"
+    point_cloud = load_and_downsample_pointcloud(point_cloud_path, voxel_size=0.01, sample_ratio=1.0)
 
     ik_solver = Kinematics(
-        urdf_path, end_effector_link, kinematic_chain_joints, visualize=True
+        urdf_path, end_effector_link, kinematic_chain_joints, visualize=True, point_cloud=point_cloud, point_cloud_radius=0.01
     )
 
     ik_solver.run_calibration(num_samples=10000, collision_threshold=0.95)
@@ -880,14 +1046,14 @@ def main():
     
     # set rotation based on euler angles
     target_rotation = RotationMatrix(RollPitchYaw([np.pi/2, 0.0, np.pi/2]))
-    target_pose = RigidTransform(
-        target_rotation,
-        ee_pose.translation() - np.array([-0.15, 0.15, 1.12])  # Match the original script target
-    )
     # target_pose = RigidTransform(
-    #     ee_pose.rotation(),
-    #     ee_pose.translation() - np.array([0.3, 0.0, 0.8])  # Match the original script target
+    #     target_rotation,
+    #     ee_pose.translation() - np.array([-0.15, 0.15, 1.02])  # Match the original script target
     # )
+    target_pose = RigidTransform(
+        ee_pose.rotation(),
+        ee_pose.translation() - np.array([0.1, 0.0, 0.2])  # Match the original script target
+    )
     print(f"\nTarget pose for IK:\n{target_pose.translation()}\n{target_pose.rotation()}")
     
     # Show target pose with a marker in meshcat
@@ -910,8 +1076,10 @@ def main():
         
     # Run inverse kinematics to solve for the target pose
     start_time = time.time()
+    # Define a default value for visualize_steps instead of using args
+    visualize_steps = False
     q_sol, info = ik_solver.inverse_kinematics(target_pose, initial_guess=test_q, 
-                                         visualize_steps=args.visualize_steps)
+                                         visualize_steps=visualize_steps)
     end_time = time.time()
     
     # Print results
@@ -951,6 +1119,19 @@ def main():
         # Report point cloud collisions if available
         if "point_cloud_collisions" in info and info["point_cloud_collisions"] > 0:
             print(f"\nSolution has {info['point_cloud_collisions']} collisions with the point cloud")
+            
+            # Use the colliding points that were already detected during IK
+            if "colliding_points" in info and info["colliding_points"]:
+                # Clear previous collision visualizations
+                if ik_solver.visualize and ik_solver.meshcat:
+                    try:
+                        ik_solver.meshcat.Delete("/colliding_points")
+                    except:
+                        pass
+                    
+                    # Visualize the colliding points
+                    ik_solver.visualize_colliding_points(info["colliding_points"])
+                    print(f"Visualized {len(info['colliding_points'])} colliding points in the point cloud (in red)")
         elif ik_solver.point_cloud is not None:
             print("\nSolution has no collisions with the point cloud")
         

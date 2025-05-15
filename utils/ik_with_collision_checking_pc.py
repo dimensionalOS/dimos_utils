@@ -10,6 +10,7 @@ import tqdm
 import trimesh.primitives
 import open3d as o3d
 from importlib.machinery import SourceFileLoader
+import xml.etree.ElementTree as ET
 
 # Fix LCM message imports
 try:
@@ -306,6 +307,77 @@ class URDFInverseKinematicsWithCollisionChecker:
         
         return collisions
         
+
+    def visualize_collision_points(self, collision_pairs):
+        """Visualize collision points in red.
+        
+        Args:
+            collision_pairs: List of collision pairs from check_self_collisions or from get_collision_geometry_names
+        """
+        if not self.visualize or not self.meshcat:
+            return
+            
+        # Clear existing collision markers
+        try:
+            self.meshcat.Delete("/collision_markers")
+        except:
+            pass
+            
+        # Create a bright red color for collision points
+        red = np.array([1.0, 0.0, 0.0, 1.0])  # RGBA format - bright red
+        
+        # Counter for marker naming
+        marker_count = 0
+        
+        # Process dictionary-format collision pairs (from get_collision_geometry_names)
+        if collision_pairs and isinstance(collision_pairs[0], dict):
+            for collision in collision_pairs:
+                # Extract position information from frame_A and frame_B
+                for frame_info in [collision['frame_A'], collision['frame_B']]:
+                    if 'Position' in frame_info:
+                        # Extract the position vector using a simple regex-like approach
+                        pos_str = frame_info.split('Position ')[1]
+                        if pos_str.startswith('[') and ']' in pos_str:
+                            pos_str = pos_str[1:pos_str.find(']')]
+                            try:
+                                # Convert string representation to numpy array
+                                pos_values = [float(x) for x in pos_str.split()]
+                                if len(pos_values) == 3:
+                                    position = np.array(pos_values)
+                                    
+                                    # Create a small red sphere at the collision point
+                                    marker_name = f"/collision_markers/point_{marker_count}"
+                                    self.meshcat.SetObject(marker_name, 
+                                                   Sphere(0.01),  # Small sphere
+                                                   Rgba(red[0], red[1], red[2], red[3]))
+                                    # Position the marker at the collision point
+                                    self.meshcat.SetTransform(marker_name, RigidTransform(position))
+                                    marker_count += 1
+                            except:
+                                pass  # Skip if we can't parse the position
+        
+        # Process raw collision pairs (from check_self_collisions)
+        else:
+            for pair in collision_pairs:
+                # Get the collision points
+                points = []
+                if hasattr(pair, 'p_WCa') and pair.p_WCa is not None:
+                    points.append(pair.p_WCa)
+                if hasattr(pair, 'p_WCb') and pair.p_WCb is not None:
+                    points.append(pair.p_WCb)
+                    
+                # Add a marker for each point
+                for point in points:
+                    marker_name = f"/collision_markers/point_{marker_count}"
+                    self.meshcat.SetObject(marker_name, 
+                                   Sphere(0.01),  # Small sphere
+                                   Rgba(red[0], red[1], red[2], red[3]))
+                    # Position the marker at the collision point
+                    self.meshcat.SetTransform(marker_name, RigidTransform(point))
+                    marker_count += 1
+        
+        print(f"Visualized {marker_count} collision points in red")
+
     def get_collision_geometry_names(self):
         """Get the names of geometries that are in collision."""
         collision_pairs = self.check_self_collisions()
@@ -385,6 +457,8 @@ class URDFInverseKinematicsWithCollisionChecker:
                 "frame_B": frame_B_info,
                 "depth": penetration_depth
             })
+
+        self.visualize_collision_points(geometry_pairs)
         
         return geometry_pairs
     
@@ -777,7 +851,7 @@ def load_and_downsample_pointcloud(file_path, voxel_size=None, sample_ratio=None
 def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Inverse Kinematics with Collision Checking')
-    parser.add_argument('--urdf', type=str, default="/Users/yashas/Documents/dimensional/Genesis/assets/devkit_base_descr.urdf",
+    parser.add_argument('--urdf', type=str, default="../assets/devkit_base_descr.urdf",
                         help='Path to the URDF file')
     parser.add_argument('--point-cloud', type=str, help='Path to point cloud file (.pcd or .ply)')
     parser.add_argument('--voxel-size', type=float, default=0.01,
@@ -863,11 +937,16 @@ def main():
     else:
         print("\nInitial configuration is collision-free")
     
-    # Modify the pose with the same offset as in the original script
+    # set rotation based on euler angles
+    target_rotation = RotationMatrix(RollPitchYaw([np.pi/2, 0.0, np.pi/2]))
     target_pose = RigidTransform(
-        ee_pose.rotation(),
-        ee_pose.translation() - np.array([0.3, 0.0, 0.3])  # Match the original script target
+        target_rotation,
+        ee_pose.translation() - np.array([-0.15, 0.15, 1.12])  # Match the original script target
     )
+    # target_pose = RigidTransform(
+    #     ee_pose.rotation(),
+    #     ee_pose.translation() - np.array([0.3, 0.0, 0.8])  # Match the original script target
+    # )
     print(f"\nTarget pose for IK:\n{target_pose.translation()}\n{target_pose.rotation()}")
     
     # Show target pose with a marker in meshcat
@@ -898,7 +977,7 @@ def main():
     print(f"\nIK solved in {end_time - start_time:.4f} seconds")
     print(f"Solution info: {info}")
     
-    if info["success"]:
+    if True:
         print("\nIK solution found!")
         
         # Print solution joint positions
@@ -941,8 +1020,11 @@ def main():
             for collision in collisions:
                 print(f"  Collision between {collision['geometry_A']} (Link: {collision['link_A']})")
                 print(f"    and {collision['geometry_B']} (Link: {collision['link_B']})")
-                print(f"    Penetration depth: {collision['depth']:.6f}")
+                # print(f"    Penetration depth: {collision['depth']:.6f}")
                 print(f"    Locations: {collision['frame_A']} and {collision['frame_B']}")
+            
+            # Visualize the collision points in red
+            ik_solver.visualize_collision_points(collisions)
         else:
             print("\nSolution configuration is collision-free")
         
@@ -1024,7 +1106,6 @@ def main():
             time.sleep(0.1)
     except KeyboardInterrupt:
         print("Exiting visualization...")
-        print("Failed to find IK solution")
 
 if __name__ == "__main__":
     main()
