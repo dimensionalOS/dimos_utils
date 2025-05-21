@@ -1,0 +1,4 @@
+include README.md
+include pyproject.toml
+include tf_lcm_py/*.so
+recursive-include examples *.py

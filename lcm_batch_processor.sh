@@ -141,7 +141,7 @@ if [ -n "$OUTPUT_DIR" ]; then
         C_OPTIONS="--c-cpath $OUTPUT_DIR --c-hpath $OUTPUT_DIR"
     fi
     if $GENERATE_CPP; then
-        CPP_OPTIONS="--cpp-cpath $OUTPUT_DIR --cpp-hpath $OUTPUT_DIR"
+        CPP_OPTIONS="--cpp-hpath $OUTPUT_DIR"
     fi
     if $GENERATE_JAVA; then
         JAVA_OPTIONS="--jpath $OUTPUT_DIR"

@@ -1,6 +1,6 @@
 package actionlib_msgs;
 
 struct GoalID {
-    int64_t stamp;
+    std_msgs.Time stamp;
     string id;
 }

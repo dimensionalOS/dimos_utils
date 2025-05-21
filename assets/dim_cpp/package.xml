@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>dim_cpp</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="root@todo.todo">root</maintainer>
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>graph_msgs</depend>
+  <depend>moveit</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_planning_interface</depend>
+  <depend>moveit_visual_tools</depend>
+  <depend>pluginlib</depend>
+  <depend>geometry_msgs</depend>
+  <depend>moveit_msgs</depend>
+  <depend>eigen3_cmake_module</depend>
+  <depend>moveit_ros_move_group</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>xacro</depend>
+  <depend>robot_state_publisher</depend>
+
+  <depend>xarm_msgs</depend>
+  <depend>xarm_planner</depend>
+  <depend>xarm_description</depend>
+  <depend>xarm_moveit_config</depend>
+
+  <depend>sensor_msgs</depend>
+  <depend>cv_bridge</depend>
+  <!-- <depend>OpenCV</depend> -->
+  <!-- <depend>PCL</depend> -->
+  <depend>pcl_conversions</depend>
+  <depend>pcl_ros</depend>
+  <!-- <depend>libpcap-dev</depend> -->
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>uf_ros_lib</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

@@ -9,5 +9,5 @@ struct JointTrajectoryPoint {
     double velocities[velocities_length];
     double accelerations[accelerations_length];
     double effort[effort_length];
-    int64_t time_from_start;
+    std_msgs.Duration time_from_start;
 }

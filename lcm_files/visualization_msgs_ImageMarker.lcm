@@ -21,7 +21,7 @@ struct ImageMarker {
     std_msgs.ColorRGBA outline_color;
     byte filled;
     std_msgs.ColorRGBA fill_color;
-    int64_t lifetime;
+    std_msgs.Duration lifetime;
     geometry_msgs.Point points[points_length];
     std_msgs.ColorRGBA outline_colors[outline_colors_length];
 }

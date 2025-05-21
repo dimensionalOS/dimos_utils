@@ -1,7 +1,7 @@
 package nav_msgs;
 
 struct MapMetaData {
-    int64_t map_load_time;
+    std_msgs.Time map_load_time;
     float resolution;
     int32_t width;
     int32_t height;

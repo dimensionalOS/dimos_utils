@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="alfred_pan_tilt_ros2_control" params="">
+
+        <ros2_control name="alfred_pan_tilt" type="system">
+            <hardware>
+                <plugin>mock_components/GenericSystem</plugin>
+                <param name="calculate_dynamics">true</param>
+            </hardware>
+            <joint name="pan_joint">
+                <command_interface name="position"/>
+                <state_interface name="position">
+                    <param name="initial_value">0.0</param>
+                </state_interface>
+            </joint>
+            <joint name="tilt_joint">
+                <command_interface name="position"/>
+                <state_interface name="position">
+                    <param name="initial_value">1.0</param>
+                </state_interface>
+            </joint>
+        </ros2_control>
+
+    </xacro:macro>
+
+</robot>

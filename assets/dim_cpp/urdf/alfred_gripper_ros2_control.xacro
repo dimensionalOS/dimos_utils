@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="alfred_gripper_ros2_control" params="prefix=''">
+
+        <ros2_control name="${prefix}alfred_gripper" type="system">
+            <hardware>
+                <plugin>mock_components/GenericSystem</plugin>
+                <param name="calculate_dynamics">true</param>
+            </hardware>
+            <joint name="${prefix}jaw_1_joint">
+                <command_interface name="position"/>
+                <state_interface name="position">
+                    <param name="initial_value">0.0</param>
+                </state_interface>
+            </joint>
+        </ros2_control>
+
+    </xacro:macro>
+
+</robot>

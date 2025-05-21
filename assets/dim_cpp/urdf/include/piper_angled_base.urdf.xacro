@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+
+<robot name="piper_angled_base"
+    xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="piper_angled_base"
+        params="base_frame base_pos_x base_pos_y base_pos_z  base_roll base_pitch base_yaw prefix:='' r:=0.8 g:=0.8 b:=0.8 a:=1.0">
+
+        <xacro:property
+            name="file_prefix"
+            value="package://dim_cpp" />
+
+        <link name="piper_angled_mount">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/piper_angled_mount_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="${file_prefix}/meshes/devkit_base/piper_angled_mount_collision.stl" scale="1 1 1"/>
+                </geometry>
+                <material name="mat">
+                    <color rgba="${r} ${g} ${b} ${a}" />
+                </material>
+            </collision>
+            <inertial>
+                <mass value="1.5"/>
+                <inertia  ixx="0.008729344" ixy="0" ixz="0" iyy="0.0085796565" iyz="0" izz="0.01050275" />
+                <origin xyz=".225 -.365 1.41" rpy="0 0 0" />
+            </inertial>
+        </link>
+
+        <joint name="piper_mount_joint" type="fixed">
+            <parent link="${base_frame}" />
+            <child link="piper_angled_mount" />
+            <origin xyz="${base_pos_x} ${base_pos_y} ${base_pos_z}" rpy="${base_roll} ${base_pitch} ${base_yaw}" />
+        </joint>
+        
+    </xacro:macro>
+    <!-- <xacro:devkit_base base_frame="world" base_pos_x="0.0" base_pos_y="0.0" base_pos_z="0.0" base_roll="0.0" base_pitch="0.0" base_yaw="0.0" r="0.8" g="0.8" b="0.8" a="1.0" /> -->
+</robot>

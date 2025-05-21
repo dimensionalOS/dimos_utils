@@ -28,7 +28,7 @@ struct Marker {
     geometry_msgs.Pose pose;
     geometry_msgs.Vector3 scale;
     std_msgs.ColorRGBA color;
-    int64_t lifetime;
+    std_msgs.Duration lifetime;
     boolean frame_locked;
     geometry_msgs.Point points[points_length];
     std_msgs.ColorRGBA colors[colors_length];
