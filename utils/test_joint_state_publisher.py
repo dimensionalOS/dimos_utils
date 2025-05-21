@@ -17,7 +17,7 @@ def update_positions():
     lc.publish("joint_states#sensor_msgs.JointState", msg.encode())
     
     # Schedule the next update
-    root.after(100, update_positions)  # 100ms = 0.1s
+    root.after(10, update_positions)  # 10ms = 0.01s
 
 def reset_positions():
     # Reset all sliders to 0.0

@@ -1,16 +1,22 @@
+#!/usr/bin/env python3
 import numpy as np
 import lcm
 import threading
 import time
 import cv2
-import struct
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 from lcm_msgs.sensor_msgs import Image, CameraInfo, PointCloud2, PointField
 from lcm_msgs.std_msgs import Header
 
-class DepthToPointcloudConverter:
+# Drake imports
+from pydrake.systems.sensors import ImageDepth32F, CameraInfo as DrakeCameraInfo, PixelType
+from pydrake.perception import DepthImageToPointCloud
+from pydrake.systems.framework import Context, LeafSystem
+from pydrake.common.value import AbstractValue
+from pydrake.geometry import SceneGraph
+
+class DrakeDepthToPointcloudConverter:
     def __init__(self, swap_y_z=False):
         self.lc = lcm.LCM()
         self.lc_thread = None
@@ -21,11 +27,11 @@ class DepthToPointcloudConverter:
         self.last_depth_stamp = 0
         self.camera_info = None
         self.camera_info_received = False
+        self.frame_id = "camera"
         
-        # Cache for optimization
-        self.cached_x_map = None
-        self.cached_y_map = None
-        self.cached_dimensions = None
+        # Drake DepthImageToPointCloud system
+        self.drake_camera_info = None
+        self.depth_to_pc_system = None
         
         # Multithreading
         self.pool = ThreadPoolExecutor(max_workers=4)  # Adjust as needed
@@ -45,6 +51,54 @@ class DepthToPointcloudConverter:
         
         # Start LCM thread
         self.start_lcm_thread()
+        
+    def initialize_drake_system(self):
+        """Initialize the Drake DepthImageToPointCloud system with the current camera info"""
+        if self.camera_info is None:
+            return False
+        
+        # Convert LCM CameraInfo to Drake CameraInfo
+        # Drake CameraInfo requires: width, height, focal_x, focal_y, center_x, center_y
+        width = self.camera_info.width
+        height = self.camera_info.height
+        fx = self.camera_info.K[0]  # Focal length x
+        fy = self.camera_info.K[4]  # Focal length y
+        cx = self.camera_info.K[2]  # Principal point x
+        cy = self.camera_info.K[5]  # Principal point y
+        
+        # Apply downsampling if requested
+        if self.downsample_factor > 1:
+            width = width // self.downsample_factor
+            height = height // self.downsample_factor
+            fx = fx / self.downsample_factor
+            fy = fy / self.downsample_factor
+            cx = cx / self.downsample_factor
+            cy = cy / self.downsample_factor
+        
+        # Create Drake CameraInfo
+        self.drake_camera_info = DrakeCameraInfo(width=width, height=height, 
+                                                focal_x=fx, focal_y=fy, 
+                                                center_x=cx, center_y=cy)
+        
+        # Create DepthImageToPointCloud system
+        # Using PixelType.kDepth32F since we'll convert all depths to float32
+        self.depth_to_pc_system = DepthImageToPointCloud(
+            camera_info=self.drake_camera_info,
+            pixel_type=PixelType.kDepth32F,
+            scale=1.0,  # We'll handle any scaling before passing to Drake
+            fields=2  # BaseField.kXYZs - basic point cloud with XYZ coordinates
+        )
+        
+        # Create a context specific to this system
+        # Important: Every time we recreate the system, we need a new context
+        self.context = self.depth_to_pc_system.CreateDefaultContext()
+        
+        print(f"Initialized Drake DepthImageToPointCloud with camera parameters:")
+        print(f"  Size: {width}x{height}")
+        print(f"  Focal: ({fx:.1f}, {fy:.1f})")
+        print(f"  Center: ({cx:.1f}, {cy:.1f})")
+        
+        return True
         
     def depth_callback(self, channel, data):
         try:
@@ -67,6 +121,7 @@ class DepthToPointcloudConverter:
             # Cache the image and timestamp
             self.last_depth_image = depth_img
             self.last_depth_stamp = img_msg.header.stamp
+            self.frame_id = img_msg.header.frame_id
             
             # If we have camera info, convert depth to point cloud in a separate thread
             if self.camera_info_received:
@@ -85,12 +140,11 @@ class DepthToPointcloudConverter:
             # Mark that we've received the camera info
             self.camera_info_received = True
             
-            # Clear the cache when camera info changes
-            self.cached_x_map = None
-            self.cached_y_map = None
-            self.cached_dimensions = None
+            # Initialize Drake system with this camera info
+            success = self.initialize_drake_system()
             
-            print(f"Received camera info: f={self.camera_info.K[0]:.1f}, width={self.camera_info.width}, height={self.camera_info.height}")
+            if success:
+                print(f"Received camera info: f={self.camera_info.K[0]:.1f}, width={self.camera_info.width}, height={self.camera_info.height}")
             
         except Exception as e:
             print(f"Error in camera info callback: {e}")
@@ -112,11 +166,10 @@ class DepthToPointcloudConverter:
         self.lcm_thread.daemon = True
         self.lcm_thread.start()
     
-    def create_point_cloud2_msg(self, points, rgb=None, header=None):
+    def create_point_cloud2_msg(self, points, header=None):
         """
         Create a PointCloud2 message from point data
         :param points: Nx3 numpy array of (x, y, z) points
-        :param rgb: Nx3 numpy array of (r, g, b) colors (optional)
         :param header: Header to use for the message (optional)
         """
         # Create PointCloud2 message
@@ -179,7 +232,6 @@ class DepthToPointcloudConverter:
         cloud_msg.point_step = point_step
         cloud_msg.row_step = point_step * N
         
-        # Create XYZRGB point cloud
         # Create intensity column (all 1.0 for visibility)
         intensity = np.ones((N, 1), dtype=np.float32)
         
@@ -201,83 +253,109 @@ class DepthToPointcloudConverter:
         
         return cloud_msg
     
-    def generate_point_cloud(self, depth_image):
+    def drake_depth_to_pointcloud(self, depth_image):
         """
-        Convert a depth image to a point cloud (optimized version)
-        :param depth_image: numpy array with depth values
+        Convert a depth image to a point cloud using Drake's DepthImageToPointCloud
+        :param depth_image: numpy array with depth values (float32, in meters)
         :return: Nx3 numpy array of (x, y, z) points
         """
-        # Check if we need to create the lookup maps
-        height, width = depth_image.shape
+        if self.depth_to_pc_system is None:
+            print("Drake DepthImageToPointCloud system not initialized")
+            return None
         
-        if (self.cached_x_map is None or self.cached_y_map is None or 
-            self.cached_dimensions != (height, width)):
+        # Detailed timing for performance analysis
+        start_total = time.time()
+        
+        # Apply downsampling if requested (this can significantly improve performance)
+        start_downsample = time.time()
+        if self.downsample_factor > 1:
+            depth_image = cv2.resize(depth_image, 
+                                    (self.drake_camera_info.width(), self.drake_camera_info.height()), 
+                                    interpolation=cv2.INTER_NEAREST)
+        downsample_time = time.time() - start_downsample
+        
+        # Apply filters to depth image before conversion
+        # Performance optimization: Don't create a copy unless necessary
+        start_filter = time.time()
+        depth_image_filtered = depth_image  # Reference first
+        
+        # Only create a copy if filters are applied
+        if self.filter_threshold > 0 or self.max_depth < float('inf'):
+            depth_image_filtered = np.copy(depth_image)  
             
-            # Get camera matrix
-            if self.camera_info is None:
-                print("Camera info not available")
-                return None
-            
-            # Get focal lengths and principal point from camera info
-            # In the camera matrix: [fx, 0, cx; 0, fy, cy; 0, 0, 1]
-            fx = self.camera_info.K[0]
-            fy = self.camera_info.K[4]
-            cx = self.camera_info.K[2]
-            cy = self.camera_info.K[5]
-            
-            # Apply downsampling if requested
-            if self.downsample_factor > 1:
-                height = height // self.downsample_factor
-                width = width // self.downsample_factor
-                depth_image = cv2.resize(depth_image, (width, height), interpolation=cv2.INTER_NEAREST)
-                fx = fx / self.downsample_factor
-                fy = fy / self.downsample_factor
-                cx = cx / self.downsample_factor
-                cy = cy / self.downsample_factor
-            
-            # Create coordinate maps (these can be reused for all frames with the same dimensions)
-            # Using meshgrid is more efficient than nested loops
-            v, u = np.mgrid[:height, :width]
-            
-            # Pre-compute fixed parts of the projection
-            self.cached_x_map = (u - cx) / fx
-            self.cached_y_map = (v - cy) / fy
-            self.cached_dimensions = (height, width)
+            # Apply depth range filtering - use vectorized operations for speed
+            mask = (depth_image_filtered < self.filter_threshold) | (depth_image_filtered > self.max_depth)
+            if mask.any():
+                depth_image_filtered[mask] = np.nan
+        filter_time = time.time() - start_filter
         
-        else:
-            # Apply downsampling if necessary
-            if self.downsample_factor > 1:
-                depth_image = cv2.resize(depth_image, 
-                                        (self.cached_dimensions[1], self.cached_dimensions[0]), 
-                                        interpolation=cv2.INTER_NEAREST)
+        # Drake processing
+        start_drake = time.time()
         
-        # Apply filters to depth image
-        valid_mask = np.logical_and(
-            depth_image > self.filter_threshold,  # Remove points too close
-            depth_image < self.max_depth         # Remove points too far
-        )
+        # Create Drake ImageDepth32F from numpy array
+        start_image_create = time.time()
+        drake_depth_image = ImageDepth32F(width=depth_image_filtered.shape[1], height=depth_image_filtered.shape[0])
         
-        # Extract valid depth values and coordinates
-        valid_depths = depth_image[valid_mask]
-        valid_x_map = self.cached_x_map[valid_mask]
-        valid_y_map = self.cached_y_map[valid_mask]
+        # Drake expects a 3D array with shape (height, width, 1)
+        # Reshape the depth image to match the expected format
+        # Performance optimization: Use reshape view when possible instead of copy
+        reshaped_depth = depth_image_filtered.reshape(depth_image_filtered.shape[0], depth_image_filtered.shape[1], 1)
+        drake_depth_image.mutable_data[:] = reshaped_depth
+        image_create_time = time.time() - start_image_create
         
-        # Compute 3D points
-        # Using multiple small arrays is more cache-friendly than a single large array
-        # This is faster than appending to a list or concatenating arrays
-        points_x = valid_x_map * valid_depths
-        points_y = valid_y_map * valid_depths
-        points_z = valid_depths
+        # Set the depth image as an input to the system
+        start_drake_process = time.time()
+        self.depth_to_pc_system.depth_image_input_port().FixValue(
+            self.context, drake_depth_image)
         
-        # Stack into a single array only at the end
+        # Get the output point cloud
+        output_port = self.depth_to_pc_system.point_cloud_output_port()
+        drake_point_cloud = output_port.Eval(self.context)
+        drake_process_time = time.time() - start_drake_process
+        
+        # Convert Drake PointCloud to numpy array
+        start_conversion = time.time()
+        # Drake point cloud stores XYZ as floats in its 'xyzs' field
+        # Performance optimization: Use direct array access when possible
+        points_array = np.asarray(drake_point_cloud.xyzs()).T  # Shape (N, 3)
+        conversion_time = time.time() - start_conversion
+        
+        # Filter invalid points
+        start_filter_points = time.time()
+        # Filtering is slow if there are many invalid points, only do if necessary
+        if np.isnan(points_array).any() or np.isinf(points_array).any():
+            valid_mask = ~np.any(np.isnan(points_array) | np.isinf(points_array), axis=1)
+            points_array = points_array[valid_mask]
+        filter_points_time = time.time() - start_filter_points
+        
+        drake_time = time.time() - start_drake
+        
+        # Apply coordinate transformation if needed
+        start_swap = time.time()
+        result = None
         if self.swap_y_z:
-            # Swap Y and Z axes for correct orientation in visualization
+            # Swap Y and Z axes for visualization
             # Standard camera convention: X right, Y down, Z forward
             # After swap: X right, Z down (up becomes positive), Y forward (depth)
-            return np.column_stack((points_x, points_z, -points_y))  # Negate Y to flip axis
+            result = np.column_stack((points_array[:, 0], points_array[:, 2], -points_array[:, 1]))
+            if len(result) > 0:
+                print(f"Y-Z axes swapped! Example point: [{result[0,0]:.2f}, {result[0,1]:.2f}, {result[0,2]:.2f}]")
         else:
-            # Use standard camera coordinate system 
-            return np.column_stack((points_x, points_y, points_z))
+            result = points_array
+            if len(result) > 0:
+                print(f"Standard XYZ mapping! Example point: [{result[0,0]:.2f}, {result[0,1]:.2f}, {result[0,2]:.2f}]")
+        swap_time = time.time() - start_swap
+        
+        # Overall performance metrics
+        total_time = time.time() - start_total
+        print(f"Performance breakdown (ms): Total={total_time*1000:.1f}, "
+              f"Downsample={downsample_time*1000:.1f}, Filter={filter_time*1000:.1f}, "
+              f"Drake={drake_time*1000:.1f}, Swap={swap_time*1000:.1f}")
+        print(f"Drake details (ms): Image={image_create_time*1000:.1f}, "
+              f"Process={drake_process_time*1000:.1f}, Convert={conversion_time*1000:.1f}, "
+              f"Filter={filter_points_time*1000:.1f}")
+        
+        return result
     
     def process_depth_image(self, depth_image, header):
         """
@@ -287,10 +365,9 @@ class DepthToPointcloudConverter:
         """
         try:
             start_time = time.time()
-            self.frame_id = header.frame_id
             
-            # Generate point cloud
-            points = self.generate_point_cloud(depth_image)
+            # Convert depth image to point cloud using Drake
+            points = self.drake_depth_to_pointcloud(depth_image)
             
             if points is not None and len(points) > 0:
                 # Create PointCloud2 message
@@ -315,11 +392,12 @@ class DepthToPointcloudConverter:
             self.lcm_thread.join(timeout=1.0)
         self.pool.shutdown()
 
+
 def main():
     import argparse
     
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description='Convert depth images to point clouds')
+    parser = argparse.ArgumentParser(description='Convert depth images to point clouds using Drake')
     parser.add_argument('--swap-y-z', action='store_true', help='Swap Y and Z axes for visualization')
     parser.add_argument('--downsample', type=int, default=1, help='Downsample factor (1=no downsampling, 2=half resolution, etc.)')
     parser.add_argument('--max-depth', type=float, default=10.0, help='Maximum depth to include in meters')
@@ -327,7 +405,7 @@ def main():
     args = parser.parse_args()
     
     # Initialize depth to pointcloud converter
-    converter = DepthToPointcloudConverter(swap_y_z=args.swap_y_z)
+    converter = DrakeDepthToPointcloudConverter(swap_y_z=args.swap_y_z)
     
     # Set additional parameters
     converter.downsample_factor = args.downsample
@@ -335,7 +413,7 @@ def main():
     converter.filter_threshold = args.min_depth
     
     try:
-        print("Depth to pointcloud converter running with settings:")
+        print("Drake Depth to Pointcloud converter running with settings:")
         print(f"  Swap Y-Z axes: {args.swap_y_z}")
         print(f"  Downsample factor: {args.downsample}")
         print(f"  Depth range: {args.min_depth} to {args.max_depth} meters")
@@ -351,6 +429,7 @@ def main():
         # Clean up
         converter.stop()
         print("Converter stopped.")
+
 
 if __name__ == "__main__":
     main()
