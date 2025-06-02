@@ -110,7 +110,7 @@ class RGBToConvex:
             mean_color = image[seg].mean(axis=0)  # [R, G, B]
             # print(f"Mask mean color: {mean_color}")
 
-            if seg.sum() == 0 or mask['area'] > 12500:
+            if seg.sum() == 0 or mask['area'] > 12500 or mask['area'] < 500:
                 continue
 
             for target_color in target_colors:
@@ -135,11 +135,13 @@ def main():
             if masks is not None:
                 rgb_img = rgb_to_convex.rgb_image.copy()
                 overlay = rgb_img.copy()
-                for mask in masks:
-                    # 1. Mask the depth
-                    depth_masked = np.where(mask, rgb_to_convex.depth_image, 0)
-                    masked_depth = rgb_to_convex.depth_image[mask.astype(bool)]
-                    print(f"Masked depth stats — min: {masked_depth.min()}, max: {masked_depth.max()}, nonzero: {np.count_nonzero(masked_depth)}")
+                for mask in masks[:2]:
+                    kernel = np.ones((5, 5), np.uint8)
+                    cleaned_mask = cv2.morphologyEx(mask.astype(np.uint8), cv2.MORPH_OPEN, kernel)
+                    depth_masked = np.where(cleaned_mask, rgb_to_convex.depth_image, 0)
+
+                    # masked_depth = rgb_to_convex.depth_image[mask.astype(bool)]
+                    # print(f"Masked depth stats — min: {masked_depth.min()}, max: {masked_depth.max()}, nonzero: {np.count_nonzero(masked_depth)}")
 
                     # 2. Convert to point cloud
                     pcd = o3dpc.open3d_depth_to_pointcloud(depth_masked)
@@ -148,7 +150,34 @@ def main():
                         return
                     pcd_o3d = o3d.geometry.PointCloud()
                     pcd_o3d.points = o3d.utility.Vector3dVector(pcd)  # pcd is your Nx3 numpy array
-                    o3d.visualization.draw_geometries([pcd_o3d], window_name="Segmented Object Point Cloud")
+                    cl, index = pcd_o3d.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
+                    inlier_cloud = pcd_o3d.select_by_index(index)
+                    outlier_cloud = pcd_o3d.select_by_index(index, invert=True)
+                    outlier_cloud.paint_uniform_color([1, 0, 0]) # red
+                    inlier_cloud.paint_uniform_color([0, 1, 0]) # green
+                    o3d.visualization.draw_geometries([inlier_cloud, outlier_cloud])
+
+
+                    # Assume pcd_o3d is your Open3D PointCloud object (already populated)
+                    print(f"[INFO] Point cloud has {np.asarray(pcd_o3d.points).shape[0]} points")
+
+                    # Compute convex hull
+                    hull_mesh, hull_indices = inlier_cloud.compute_convex_hull()
+                    hull_mesh.compute_vertex_normals()  # optional, for better visualization
+                    # Optional: Simplify for display
+                    hull_mesh = hull_mesh.simplify_vertex_clustering(voxel_size=0.005)
+
+                    # Color the hull for clarity
+                    hull_mesh.paint_uniform_color([1.0, 0.0, 0.0])  # red
+
+                    # Show both point cloud and its convex hull
+                    o3d.visualization.draw_geometries(
+                        [inlier_cloud, hull_mesh],
+                        window_name="Convex Hull Mesh",
+                        width=1280,
+                        height=720
+                    )
+                    
                     color = np.random.randint(0, 255, size=(3,), dtype=np.uint8)
                     overlay[mask.astype(bool)] = overlay[mask.astype(bool)] * 0.5 + color * 0.5
 
@@ -157,9 +186,6 @@ def main():
                 cv2.imwrite(output_path, overlay_bgr)
                 print(f"[INFO] Saved overlay visualization to: {output_path}")
 
-                # cv2.imshow("SAM2 Segmentation Overlay", overlay_bgr)
-                # cv2.waitKey(0)
-                # cv2.destroyAllWindows()
             time.sleep(0.5)
 
     except KeyboardInterrupt:
