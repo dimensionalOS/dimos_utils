@@ -7,7 +7,7 @@ import time
 import cv2
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
-from lcm_msgs.sensor_msgs import Image, CameraInfo, PointCloud2, PointField
+from lcm_msgs.sensor_msgs import Image, CameraInfo, PointCloud2, PointField, JointState
 from lcm_msgs.std_msgs import Header
 
 # Open3D imports
@@ -20,9 +20,16 @@ import signal
 import sys
 import atexit
 from datetime import datetime
+from pydrake.all import MinimumDistanceLowerBoundConstraint, MultibodyPlant, Parser, DiagramBuilder, AddMultibodyPlantSceneGraph, MeshcatVisualizer, StartMeshcat, RigidTransform, Role, RollPitchYaw, RotationMatrix, Solve, InverseKinematics, MeshcatVisualizerParams, MinimumDistanceLowerBoundConstraint, DoDifferentialInverseKinematics, DifferentialInverseKinematicsStatus, DifferentialInverseKinematicsParameters, DepthImageToPointCloud
+import traceback
+import os
+from pydrake.multibody.tree import RevoluteJoint, PrismaticJoint
 
+
+from typing import Optional
 class Open3DDepthToPointcloudConverter:
     def __init__(self, swap_y_z=False):
+        self.joint_states_dict = {}
         self.lc = lcm.LCM()
         self.lc_thread = None
         self._resources_to_cleanup = []
@@ -70,6 +77,7 @@ class Open3DDepthToPointcloudConverter:
         # Subscribe to topics
         self.lc.subscribe("head_cam_depth#sensor_msgs.Image", self.depth_callback)
         self.lc.subscribe("head_cam_depth_info#sensor_msgs.CameraInfo", self.camera_info_callback)
+        self.lc.subscribe("joint_states#sensor_msgs.JointState", self._joint_states_callback)
         
         # Start LCM thread
         self.start_lcm_thread()
@@ -102,10 +110,10 @@ class Open3DDepthToPointcloudConverter:
             fx=fx, fy=fy, cx=cx, cy=cy
         )
         
-        print(f"Initialized Open3D camera intrinsic with parameters:")
-        print(f"  Size: {width}x{height}")
-        print(f"  Focal: ({fx:.1f}, {fy:.1f})")
-        print(f"  Center: ({cx:.1f}, {cy:.1f})")
+        # print(f"Initialized Open3D camera intrinsic with parameters:")
+        # print(f"  Size: {width}x{height}")
+        # print(f"  Focal: ({fx:.1f}, {fy:.1f})")
+        # print(f"  Center: ({cx:.1f}, {cy:.1f})")
         
         return True
 
@@ -139,63 +147,98 @@ class Open3DDepthToPointcloudConverter:
         # Clear the resources list
         self._resources_to_cleanup = []
 
-    def get_transform(self, target_frame, source_frame):
-        attempts = 0
-        max_attempts = 20  # Reduced from 120 to avoid long blocking
-        
-        while attempts < max_attempts:
-            try:
-                # Process LCM messages with error handling
-                if not self.tf_lcm_instance.handle_timeout(100):  # 100ms timeout
-                    # If handle_timeout returns false, we might need to re-check if LCM is still good
-                    if not self.tf_lcm_instance.good():
-                        print("WARNING: LCM instance is no longer in a good state")
-                
-                # Get the most recent timestamp from the buffer instead of using current time
-                try:
-                    timestamp = self.buffer.get_most_recent_timestamp()
-                    if attempts % 10 == 0:
-                        print(f"Using timestamp from buffer: {timestamp}")
-                except Exception as e:
-                    # Fall back to current time if get_most_recent_timestamp fails
-                    timestamp = datetime.now()
-                    if not hasattr(timestamp, 'timestamp'):
-                        timestamp.timestamp = lambda: time.mktime(timestamp.timetuple()) + timestamp.microsecond / 1e6
-                    if attempts % 10 == 0:
-                        print(f"Falling back to current time: {timestamp}")
-                
-                # Check if we can find the transform
-                if self.buffer.can_transform(target_frame, source_frame, timestamp):
-                    # print(f"Found transform between '{target_frame}' and '{source_frame}'!")
-                    
-                    # Look up the transform with the timestamp from the buffer
-                    transform = self.buffer.lookup_transform(target_frame, source_frame, timestamp, 
-                                            timeout=10.0, time_tolerance=0.1, lcm_module=lcm_msgs)
-                    
-                    return transform
-                
-                # Increment counter and report status every 10 attempts
-                attempts += 1
-                if attempts % 10 == 0:
-                    print(f"Still waiting... (attempt {attempts}/{max_attempts})")
-                    frames = self.buffer.get_all_frame_names()
-                    if frames:
-                        print(f"Frames received so far ({len(frames)} total):")
-                        for frame in sorted(frames):
-                            print(f"  {frame}")
-                    else:
-                        print("No frames received yet")
-                
-                # Brief pause
-                time.sleep(0.5)
-                
-            except Exception as e:
-                print(f"Error during transform lookup: {e}")
-                attempts += 1
-                time.sleep(1)  # Longer pause after an error
-        
-        print(f"\nERROR: No transform found after {max_attempts} attempts")
-        return None
+    def _joint_states_callback(self, channel, data):
+        """
+        Callback for joint states. Builds a dict: joint_name -> joint_position.
+        """
+        try:
+            msg = JointState.decode(data)
+            # msg.name is a list of joint‐names, msg.position is a list of floats
+            self.joint_states_dict = {
+                name: pos for name, pos in zip(msg.name, msg.position)
+            }
+            # For debugging:
+            # print(f"Received joint states dict: {self.joint_states_dict}")
+        except Exception as e:
+            print(f"Error decoding joint states: {e}")
+            traceback.print_exc()
+
+
+    def get_transform(self,
+                      source_frame: str,
+                      target_frame: str,
+                      urdf_path: Optional[str] = os.path.abspath("../assets/devkit_base_descr.urdf")
+                      ) -> RigidTransform:
+        """
+        Build a small MultibodyPlant from the given URDF, set all joints
+        according to whatever was most recently stored in self.joint_states_dict,
+        and return the RigidTransform from source_frame --> target_frame.
+
+        Assumes that self.joint_states_dict was populated by _joint_states_callback,
+        which maps joint_name -> position.
+
+        Args:
+            source_frame:  name of the “from” frame (as defined in the URDF).
+            target_frame:  name of the “to” frame (as defined in the URDF).
+            urdf_path:     absolute (or relative) path to your URDF file.
+
+        Returns:
+            RigidTransform: pose of `target_frame` expressed in `source_frame` coordinates.
+        """
+        # List all joints in the correct kinematic order:
+        kinematic_chain_joints = [
+            "pillar_platform_joint",
+            "joint1",
+            "joint2",
+            "joint3",
+            "joint4",
+            "joint5",
+            "joint6",
+        ]
+
+        # 1) Build a brand‐new MultibodyPlant + SceneGraph from the URDF:
+        builder = DiagramBuilder()
+        plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.0)
+        parser = Parser(plant)
+        parser.AddModelsFromUrl(f"file://{urdf_path}")
+        plant.Finalize()
+
+        # 2) Create a fresh Context:
+        context = plant.CreateDefaultContext()
+
+        # 3) For each joint in our 7-DOF chain, check if we've got a value in self.joint_states_dict.
+        #    If so, set it; otherwise leave at default (zero).
+        for joint_name in kinematic_chain_joints:
+            if joint_name in self.joint_states_dict:
+                pos = self.joint_states_dict[joint_name]
+                joint = plant.GetJointByName(joint_name)
+
+                # If it's a revolute joint, use set_angle(...)
+                if isinstance(joint, RevoluteJoint):
+                    joint.set_angle(context, pos)
+
+                # If it's a prismatic joint, use set_translation(...)
+                elif isinstance(joint, PrismaticJoint):
+                    joint.set_translation(context, pos)
+
+                # Otherwise (e.g. multi-DOF), fall back to set_positions([...]) if available:
+                else:
+                    # joint.num_positions() should tell you how many DOFs this joint has.
+                    joint.set_positions(context, np.array([pos] * joint.num_positions()))
+
+            # If joint_name not in dictionary, we leave it at its default (zero)
+            else:
+                pass
+
+        # 4) Look up the two Frame objects by name:
+        frame_A = plant.GetFrameByName(source_frame)
+        frame_B = plant.GetFrameByName(target_frame)
+
+        # 5) Compute the relative transform X_A_B = pose_of(B) in A’s coords:
+        X_A_B = plant.CalcRelativeTransform(context, frame_A, frame_B)
+
+        return X_A_B
+
         
     def depth_callback(self, channel, data):
         try:
@@ -220,9 +263,12 @@ class Open3DDepthToPointcloudConverter:
             self.last_depth_stamp = img_msg.header.stamp
             self.frame_id = img_msg.header.frame_id
             
+            # TODO: Figure out a way to toggle this based on whether or not this 
+            # script is being run standalone or called from another script.
+            
             # If we have camera info, convert depth to point cloud in a separate thread
-            if self.camera_info_received:
-                self.pool.submit(self.process_depth_image, depth_img, img_msg.header)
+            # if self.camera_info_received:
+            #     self.pool.submit(self.process_depth_image, depth_img, img_msg.header)
                 
         except Exception as e:
             print(f"Error in depth callback: {e}")
@@ -240,8 +286,8 @@ class Open3DDepthToPointcloudConverter:
             # Initialize Open3D intrinsic with this camera info
             success = self.initialize_open3d_intrinsic()
             
-            if success:
-                print(f"Received camera info: f={self.camera_info.K[0]:.1f}, width={self.camera_info.width}, height={self.camera_info.height}")
+            # if success:
+            #     print(f"Received camera info: f={self.camera_info.K[0]:.1f}, width={self.camera_info.width}, height={self.camera_info.height}")
             
         except Exception as e:
             print(f"Error in camera info callback: {e}")
@@ -443,58 +489,50 @@ class Open3DDepthToPointcloudConverter:
         
         return result
     
-    def transform_point_cloud_with_open3d(self, points_np: np.ndarray, transform) -> np.ndarray:
+    def transform_point_cloud_with_open3d(self,
+                                          points_np: np.ndarray,
+                                          tf: RigidTransform) -> np.ndarray:
         """
-        Transforms a point cloud using Open3D given a transform.
-        
+        Transforms a point cloud using Open3D given a Drake RigidTransform.
+
         Args:
             points_np (np.ndarray): Nx3 array of 3D points.
-            transform: Transform from tf_lcm_py.
+            tf (RigidTransform): Drake transform to apply.
 
         Returns:
             np.ndarray: Nx3 array of transformed 3D points.
         """
-        if points_np.shape[1] != 3:
+        if points_np.ndim != 2 or points_np.shape[1] != 3:
             print("Input point cloud must have shape Nx3.")
             return points_np
 
-        # Convert transform to 4x4 numpy matrix
+        # 1) Convert Drake RigidTransform --> 4×4 NumPy matrix
         tf_matrix = np.eye(4)
-        
-        # Extract rotation quaternion components
-        qw = transform.transform.rotation.w
-        qx = transform.transform.rotation.x
-        qy = transform.transform.rotation.y
-        qz = transform.transform.rotation.z
-        
-        # Convert quaternion to rotation matrix
-        # Formula from: https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix
-        tf_matrix[0, 0] = 1 - 2*qy*qy - 2*qz*qz
-        tf_matrix[0, 1] = 2*qx*qy - 2*qz*qw
-        tf_matrix[0, 2] = 2*qx*qz + 2*qy*qw
-        
-        tf_matrix[1, 0] = 2*qx*qy + 2*qz*qw
-        tf_matrix[1, 1] = 1 - 2*qx*qx - 2*qz*qz
-        tf_matrix[1, 2] = 2*qy*qz - 2*qx*qw
-        
-        tf_matrix[2, 0] = 2*qx*qz - 2*qy*qw
-        tf_matrix[2, 1] = 2*qy*qz + 2*qx*qw
-        tf_matrix[2, 2] = 1 - 2*qx*qx - 2*qy*qy
-        
-        # Set translation
-        tf_matrix[0, 3] = transform.transform.translation.x
-        tf_matrix[1, 3] = transform.transform.translation.y
-        tf_matrix[2, 3] = transform.transform.translation.z
 
-        # Create Open3D point cloud
+        # rotation() is a RotationMatrix.  To get the 3×3 matrix:
+        R_mat = tf.rotation().matrix()      # type: ignore[attr-defined]
+        t_vec = tf.translation()            # returns a length-3 NumPy array
+
+        tf_matrix[:3, :3] = R_mat
+        tf_matrix[:3, 3] = t_vec
+
+        # (Optional) If you want to log the quaternion for debugging:
+        # q = tf.rotation().ToQuaternion()   # This is a pydrake.common.eigen_geometry.Quaternion
+        # qw, qx, qy, qz = q.w(), q.x(), q.y(), q.z()
+        #
+        # print(f"Quaternion = (w={qw:.6f}, x={qx:.6f}, y={qy:.6f}, z={qz:.6f})")
+        # print(f"Translation = ({t_vec[0]:.6f}, {t_vec[1]:.6f}, {t_vec[2]:.6f})")
+
+        # 2) Create an Open3D point cloud from points_np
         pcd = o3d.geometry.PointCloud()
-        pcd.points = o3d.utility.Vector3dVector(points_np)
+        pcd.points = o3d.utility.Vector3dVector(points_np.astype(np.float64))
 
-        # Apply transformation
+        # 3) Apply the 4×4 transform matrix
         pcd.transform(tf_matrix)
 
-        # Return as NumPy array
+        # 4) Return the transformed points as an Nx3 NumPy array
         return np.asarray(pcd.points)
+
     
     def process_depth_image(self, depth_image, header):
         """
@@ -517,6 +555,7 @@ class Open3DDepthToPointcloudConverter:
                 
             # Get transform from camera frame to world frame
             transform = self.get_transform(self.cloud_frame_id, self.frame_id)
+            # transform = None
             
             if transform is None:
                 # print("No transform found, using untransformed point cloud")
