@@ -7,6 +7,7 @@ setup.py
 ./tf_lcm_py/_tf_lcm_py.cpython-310-x86_64-linux-gnu.so
 ./tf_lcm_py/_tf_lcm_py.cpython-311-darwin.so
 ./tf_lcm_py/_tf_lcm_py.cpython-312-darwin.so
+./tf_lcm_py/_tf_lcm_py.cpython-312-x86_64-linux-gnu.so
 ./tf_lcm_py/_tf_lcm_py.so
 ./tf_lcm_py/direct_import_depr.py
 ./tf_lcm_py/tf_lcm_py.cpython-310-darwin.so
@@ -28,6 +29,7 @@ tf_lcm_py/_tf_lcm_py.cpython-310-darwin.so
 tf_lcm_py/_tf_lcm_py.cpython-310-x86_64-linux-gnu.so
 tf_lcm_py/_tf_lcm_py.cpython-311-darwin.so
 tf_lcm_py/_tf_lcm_py.cpython-312-darwin.so
+tf_lcm_py/_tf_lcm_py.cpython-312-x86_64-linux-gnu.so
 tf_lcm_py/_tf_lcm_py.so
 tf_lcm_py/direct_import_depr.py
 tf_lcm_py/tf_lcm_py.cpython-310-darwin.so
