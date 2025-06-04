@@ -123,6 +123,7 @@ class Planner:
         self.pointcloud_lock = threading.Lock()
         # If you need to subscribe to pointclouds, uncomment:
         # self.lc.subscribe("head_cam_pointcloud#sensor_msgs.PointCloud2", self._handle_pointcloud_msg)
+        
         self.lcm_thread = Thread(target=self._run_lcm, daemon=True)
         self.lcm_thread.start()
 
@@ -215,7 +216,7 @@ class Planner:
             # else:
             #     # If there are more objects, place them all at the same location
             pos = np.array([0.0, 0.0, 0.0])
-            rpy = RollPitchYaw(np.deg2rad(90.0), 0.0, 0.0)
+            rpy = RollPitchYaw(0.0, 0.0, 0.0)
 
             X_WG = DrakeRigidTransform(RotationMatrix(rpy), pos)
 
@@ -237,11 +238,11 @@ class Planner:
 
             print(f"[Main] Registered index {i} mesh at pos={pos}, rpy={rpy.vector()}")
 
-        # # Add a simple table so objects are not floating in space
-        # table_shape = Box(1.0, 1.0, 1.0)
-        # table_pose = RigidTransform(p=[-1.0, 0.0, 0.5])
-        # self.plant.RegisterCollisionGeometry(world, table_pose, table_shape, "table_collision", proximity)
-        # self.plant.RegisterVisualGeometry(world, table_pose, table_shape, "table_visual", [0.8, 0.8, 0.8, 1.0])
+        # Add a simple table so objects are not floating in space
+        table_shape = Box(1.0, 1.0, 1.0)
+        table_pose = RigidTransform(p=[-1.0, 0.0, 0.5])
+        self.plant.RegisterCollisionGeometry(world, table_pose, table_shape, "table_collision", proximity)
+        self.plant.RegisterVisualGeometry(world, table_pose, table_shape, "table_visual", [0.8, 0.8, 0.8, 1.0])
 
     def _setup_ompl_space(self) -> None:
         """Define OMPL real-vector state space and bounds from plant joint limits."""
@@ -547,7 +548,8 @@ def main():
     planner = Planner()
 
     # 1) Print the current end-effector pose (using FK on the current joint positions)
-    planner.set_joint_positions([-0.52, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    # planner.set_joint_positions([-0.52, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    # planner.plant.SetPositions(planner.plant_context, [0.0, -0.5, -0.52, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     current_joint_positions = planner.get_joint_positions()
     # X_W_EE_before = planner.forward_kinematics(current_joint_positions)
     X_W_EE_before = planner.plant.EvalBodyPoseInWorld(planner.plant_context, planner.end_effector_link)
@@ -579,8 +581,8 @@ def main():
     # print(f"[Main] Goal config (assumed/precomputed): {goal_q}")
     # print(f"[Main] Upper bounds: {planner.plant.GetPositionUpperLimits()[planner.joint_indices]}")
     # print(f"[Main] Lower bounds: {planner.plant.GetPositionLowerLimits()[planner.joint_indices]}")
-    # print(f"[Main] Full DOF upper bounds: {planner.plant.GetPositionUpperLimits()}")
-    # print(f"[Main] Full DOF lower bounds: {planner.plant.GetPositionLowerLimits()}")
+    print(f"[Main] Full DOF upper bounds: {planner.plant.GetPositionUpperLimits()}")
+    print(f"[Main] Full DOF lower bounds: {planner.plant.GetPositionLowerLimits()}")
 
     # 4) Plan from start_q → goal_q
     # path = planner.plan(start_q, goal_q)

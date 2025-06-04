@@ -188,6 +188,8 @@ class Open3DDepthToPointcloudConverter:
         # List all joints in the correct kinematic order:
         kinematic_chain_joints = [
             "pillar_platform_joint",
+            "pan_tilt_pan_joint",
+            "pan_tilt_head_joint",   
             "joint1",
             "joint2",
             "joint3",

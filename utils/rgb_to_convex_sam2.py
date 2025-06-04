@@ -235,7 +235,7 @@ def run_pipeline() -> List[o3d.geometry.TriangleMesh]:
 
                 # 3. Convert depth to Nx3 numpy array of points
                 init_points = converter.open3d_depth_to_pointcloud(depth_masked)
-                transform = converter.get_transform("world", "link6")
+                transform = converter.get_transform("world", "camera_center_link")
                 print(f"This is rgb_to_convex pipeline")
                 print(f"         Translation = {transform.translation()}")
                 quat_before = transform.rotation().ToQuaternion()
