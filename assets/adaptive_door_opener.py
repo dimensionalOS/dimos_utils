@@ -88,7 +88,7 @@ class AdaptiveDoorOpener:
         
         # Pivot-based rotation control
         self.control_mode = "ROTATING"  # "ROTATING" or "PULLING"
-        self.pivot_distance = 0.15  # 15cm in +z direction of link_openft frame (towards gripper)
+        self.pivot_distance = 0.2  # 20cm in +z direction of link_openft frame (towards gripper)
         self.rotation_step = 0.05  # 5 degree rotation steps (in radians)
         self.rotation_direction = 1.0  # 1.0 or -1.0
         self.min_force_seen = float('inf')
@@ -96,11 +96,14 @@ class AdaptiveDoorOpener:
         self.current_rotation_angle = 0.0
         self.force_tolerance = 10.0  # Switch to pulling when force < 10N
         self.rotation_patience = 0  # Count moves without improvement
-        self.max_rotation_patience = 3  # Switch direction after 3 non-improving moves
+        self.max_rotation_patience = 2  # Switch direction after 3 non-improving moves
         self.rotation_count = 0  # Track total rotations in current phase
         self.max_rotations = 30  # Maximum rotations to prevent infinite rotation
         self.pull_count = 0  # Track number of pulls executed
         self.pulls_between_checks = 2  # Number of pulls before checking alignment
+        
+        # Door opening direction knowledge
+        self.door_opens_clockwise = True  # Microwave door opens clockwise (hinge on left)
         
         # Get initial xARM positions
         self.xarm_initial_positions = None
@@ -701,8 +704,33 @@ class AdaptiveDoorOpener:
         
         # State machine for control modes
         if self.control_mode == "ROTATING":
-            # Check if forces are already low enough to pull
-            if lateral_force_magnitude < self.force_tolerance:
+            # Determine rotation strategy based on force direction and door knowledge
+            force_x_component = force_absolute[0]  # X component of force in sensor frame
+            
+            # Logic depends on door opening direction
+            # ARM rotates OPPOSITE to door opening direction to follow the arc
+            wrong_side = False
+            if self.door_opens_clockwise:
+                # For clockwise-opening door: positive force means rotate COUNTER-clockwise
+                if force_x_component > self.force_tolerance:
+                    print(f"  Positive lateral force detected ({force_x_component:.2f}N > {self.force_tolerance}N)")
+                    print(f"  Door opens clockwise, so arm rotates COUNTER-clockwise to align")
+                    # Force counter-clockwise rotation (negative direction)
+                    self.rotation_direction = -1.0
+                    wrong_side = True
+                    # Don't check for improvements, just rotate until force becomes negative
+            else:
+                # For counter-clockwise door: negative force means rotate CLOCKWISE  
+                if force_x_component < -self.force_tolerance:
+                    print(f"  Negative lateral force detected ({force_x_component:.2f}N < -{self.force_tolerance}N)")
+                    print(f"  Door opens counter-clockwise, so arm rotates CLOCKWISE to align")
+                    # Force clockwise rotation (positive direction)
+                    self.rotation_direction = 1.0
+                    wrong_side = True
+                    # Don't check for improvements, just rotate until force becomes positive
+                
+            # Check if forces are low enough to pull
+            if not wrong_side and lateral_force_magnitude < self.force_tolerance:
                 print(f"  Lateral forces acceptable ({lateral_force_magnitude:.2f}N < {self.force_tolerance}N)")
                 print(f"  Aligned after {self.rotation_count} rotations")
                 print("  Switching to PULLING mode!")
@@ -710,8 +738,9 @@ class AdaptiveDoorOpener:
                 self.is_first_move = True  # Reset for pulling mode
                 self.pull_count = 0  # Reset pull counter
                 return self.compute_motion_direction()  # Recursive call in PULLING mode
+                
             # Check if we've reached maximum rotations
-            elif self.rotation_count >= self.max_rotations:
+            elif not wrong_side and self.rotation_count >= self.max_rotations:
                 print(f"  Maximum rotations reached ({self.max_rotations})")
                 print(f"  Best force achieved: {self.min_force_seen:.2f}N at angle {np.degrees(self.min_force_angle):.1f}°")
                 print("  Switching to PULLING mode despite high forces")
@@ -719,35 +748,66 @@ class AdaptiveDoorOpener:
                 self.is_first_move = True  # Reset for pulling mode
                 self.pull_count = 0
                 return self.compute_motion_direction()  # Recursive call in PULLING mode
-            else:
-                # Continue rotating to minimize force
-                print(f"  Rotation {self.rotation_count+1} (force: {lateral_force_magnitude:.2f}N > {self.force_tolerance}N)")
-                print(f"  Rotating to minimize forces")
-            
-            # Check if this is an improvement
-            if lateral_force_magnitude < self.min_force_seen:
-                print(f"  Force improved! New minimum: {lateral_force_magnitude:.2f} N")
-                self.min_force_seen = lateral_force_magnitude
-                self.min_force_angle = self.current_rotation_angle
-                self.rotation_patience = 0
-            else:
-                self.rotation_patience += 1
-                print(f"  No improvement (patience: {self.rotation_patience}/{self.max_rotation_patience})")
                 
-                # If no improvement for several moves, reverse direction
-                if self.rotation_patience >= self.max_rotation_patience:
-                    self.rotation_direction *= -1.0
+            elif not wrong_side:
+                # We're in the correct force region for optimization
+                # (Already checked we're not on wrong side above)
+                print(f"  Force in correct region ({force_x_component:.2f}N), optimizing magnitude")
+                print(f"  Rotation {self.rotation_count+1} (total force: {lateral_force_magnitude:.2f}N > {self.force_tolerance}N)")
+                
+                # Check if this is an improvement
+                if lateral_force_magnitude < self.min_force_seen:
+                    print(f"  Force improved! New minimum: {lateral_force_magnitude:.2f} N")
+                    self.min_force_seen = lateral_force_magnitude
+                    self.min_force_angle = self.current_rotation_angle
                     self.rotation_patience = 0
-                    print(f"  Reversing rotation direction to {self.rotation_direction}")
+                else:
+                    self.rotation_patience += 1
+                    print(f"  No improvement (patience: {self.rotation_patience}/{self.max_rotation_patience})")
+                    
+                    # If no improvement for several moves, reverse direction
+                    if self.rotation_patience >= self.max_rotation_patience:
+                        self.rotation_direction *= -1.0
+                        self.rotation_patience = 0
+                        print(f"  Reversing rotation direction to {self.rotation_direction}")
+            else:
+                # Still in wrong region, continue forced rotation
+                if self.door_opens_clockwise:
+                    print(f"  Continuing counter-clockwise rotation to escape positive force region")
+                else:
+                    print(f"  Continuing clockwise rotation to escape negative force region")
             
             # Return None to signal rotation mode (handled separately)
             return None
             
         elif self.control_mode == "PULLING":
-            # Check if forces are too high and need alignment
-            if lateral_force_magnitude > self.force_tolerance:
-                print(f"  Lateral forces too high ({lateral_force_magnitude:.2f}N > {self.force_tolerance}N)")
-                print(f"  Switching to ROTATING for alignment")
+            # Check force direction based on door opening direction
+            force_x_component = force_absolute[0]
+            
+            # Determine if we're on wrong side based on door type
+            wrong_side = (self.door_opens_clockwise and force_x_component > self.force_tolerance) or \
+                        (not self.door_opens_clockwise and force_x_component < -self.force_tolerance)
+            
+            if wrong_side:
+                if self.door_opens_clockwise:
+                    print(f"  Positive lateral force during pull ({force_x_component:.2f}N > {self.force_tolerance}N)")
+                    print(f"  On wrong side! Door opens clockwise, so arm rotates COUNTER-clockwise")
+                    self.rotation_direction = -1.0  # Force counter-clockwise
+                else:
+                    print(f"  Negative lateral force during pull ({force_x_component:.2f}N < -{self.force_tolerance}N)")
+                    print(f"  On wrong side! Door opens counter-clockwise, so arm rotates CLOCKWISE")
+                    self.rotation_direction = 1.0  # Force clockwise
+                    
+                self.control_mode = "ROTATING"
+                self.rotation_count = 0
+                self.min_force_seen = lateral_force_magnitude
+                self.rotation_patience = 0
+                return self.compute_motion_direction()  # Recursive call in ROTATING mode
+            
+            # Check if lateral forces are too high (but negative is ok)
+            elif lateral_force_magnitude > self.force_tolerance:
+                print(f"  Lateral forces high ({lateral_force_magnitude:.2f}N > {self.force_tolerance}N)")
+                print(f"  Force is negative ({force_x_component:.2f}N), optimizing alignment")
                 self.control_mode = "ROTATING"
                 self.rotation_count = 0
                 self.min_force_seen = lateral_force_magnitude
@@ -997,13 +1057,23 @@ class AdaptiveDoorOpener:
         print("Adaptive Door Opening Controller")
         print("="*60)
         print("Strategy:")
-        print("  1. Rotate around pivot point to minimize lateral forces")
+        print("  1. Rotate around pivot point to align with door's natural arc")
         print("  2. Pull straight back once aligned")
+        print(f"  3. Door opens: {'CLOCKWISE' if self.door_opens_clockwise else 'COUNTER-CLOCKWISE'}")
         print(f"Settings:")
         print(f"  - Pivot distance: {self.pivot_distance*100:.0f}cm from link_openft")
         print(f"  - Force tolerance: {self.force_tolerance:.1f}N")
         print(f"  - Rotation step: {np.degrees(self.rotation_step):.1f} degrees")
         print(f"  - Pulls between checks: {self.pulls_between_checks}")
+        print("Force-based rotation logic:")
+        if self.door_opens_clockwise:
+            print("  - Door opens CLOCKWISE, arm rotates COUNTER-CLOCKWISE to follow arc")
+            print("  - Positive force (>10N): Rotate counter-clockwise until negative")
+            print("  - Negative force: Optimize to minimize magnitude")
+        else:
+            print("  - Door opens COUNTER-CLOCKWISE, arm rotates CLOCKWISE to follow arc")
+            print("  - Negative force (<-10N): Rotate clockwise until positive")
+            print("  - Positive force: Optimize to minimize magnitude")
         print("Press Ctrl+C to stop")
         print("="*60 + "\n")
         
