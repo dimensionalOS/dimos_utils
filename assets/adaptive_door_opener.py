@@ -59,7 +59,7 @@ class AdaptiveDoorOpener:
         self.xarm_ip = xarm_ip
         self.enable_real_robot = enable_real_robot
         self.force_scale = force_scale  # How much to move per Newton of force
-        self.motion_step_size = 0.02  # 2cm movements
+        self.motion_step_size = 0.01  # 1cm movements
         self.force_threshold = 1.0  # Minimum force magnitude to trigger motion (N)
         self.torque_threshold = 0.01  # Minimum torque magnitude (N⋅m)
         self.pull_weight = pull_weight  # Weight for pulling component
@@ -77,8 +77,6 @@ class AdaptiveDoorOpener:
         # Force-torque data storage
         self.force_history = deque(maxlen=10)  # Store last 10 readings
         self.torque_history = deque(maxlen=10)
-        self.baseline_force = None
-        self.baseline_torque = None
         self.current_force = np.zeros(3)
         self.current_torque = np.zeros(3)
         
@@ -87,6 +85,22 @@ class AdaptiveDoorOpener:
         self.motion_direction = np.array([0, 0, 0])
         self.is_first_move = True
         self.is_first_target = True  # Track first target computation separately
+        
+        # Pivot-based rotation control
+        self.control_mode = "ROTATING"  # "ROTATING" or "PULLING"
+        self.pivot_distance = 0.15  # 15cm in +z direction of link_openft frame (towards gripper)
+        self.rotation_step = 0.05  # 5 degree rotation steps (in radians)
+        self.rotation_direction = 1.0  # 1.0 or -1.0
+        self.min_force_seen = float('inf')
+        self.min_force_angle = 0.0
+        self.current_rotation_angle = 0.0
+        self.force_tolerance = 10.0  # Switch to pulling when force < 10N
+        self.rotation_patience = 0  # Count moves without improvement
+        self.max_rotation_patience = 3  # Switch direction after 3 non-improving moves
+        self.rotation_count = 0  # Track total rotations in current phase
+        self.max_rotations = 30  # Maximum rotations to prevent infinite rotation
+        self.pull_count = 0  # Track number of pulls executed
+        self.pulls_between_checks = 2  # Number of pulls before checking alignment
         
         # Get initial xARM positions
         self.xarm_initial_positions = None
@@ -123,6 +137,7 @@ class AdaptiveDoorOpener:
         
         # Create visualizations
         self.create_force_visualizations()
+        self.create_pivot_point_visualization()
         
         # Initial publish
         self.diagram.ForcedPublish(self.diagram_context)
@@ -384,6 +399,98 @@ class AdaptiveDoorOpener:
         
         print("Created force and motion visualizations")
     
+    def create_pivot_point_visualization(self):
+        """Create visualization for the virtual pivot point."""
+        # Large sphere at pivot point
+        self.meshcat.SetObject(
+            "pivot_point",
+            Sphere(0.02),  # 2cm radius sphere
+            Rgba(1.0, 1.0, 0.0, 0.8)  # Yellow color
+        )
+        
+        # Vertical axis line through pivot (to show rotation axis)
+        self.meshcat.SetObject(
+            "pivot_axis",
+            Cylinder(0.003, 0.3),  # 3mm radius, 30cm height
+            Rgba(1.0, 1.0, 0.0, 0.5)  # Semi-transparent yellow
+        )
+        
+        # Arc to show rotation path
+        self.meshcat.SetObject(
+            "rotation_arc",
+            Cylinder(0.002, 0.01),  # Will be scaled/positioned dynamically
+            Rgba(0.0, 1.0, 1.0, 0.6)  # Cyan color
+        )
+        
+        print("Created pivot point visualization (yellow sphere)")
+    
+    def update_pivot_visualization(self):
+        """Update the pivot point visualization based on current openft pose."""
+        # Get current openft pose
+        openft_pose = self.plant.EvalBodyPoseInWorld(
+            self.plant_context, self.openft_body
+        )
+        openft_pos = openft_pose.translation()
+        openft_rot = openft_pose.rotation()
+        
+        # Compute pivot point: 15cm in +z direction of link_openft frame
+        pivot_offset_local = np.array([0.0, 0.0, self.pivot_distance])
+        pivot_point_world = openft_pos + openft_rot @ pivot_offset_local
+        
+        # Update pivot sphere position
+        self.meshcat.SetTransform(
+            "pivot_point",
+            RigidTransform(RotationMatrix(), pivot_point_world)
+        )
+        
+        # Update vertical axis through pivot
+        axis_transform = RigidTransform(
+            RotationMatrix(),  # Default orientation (along z)
+            pivot_point_world
+        )
+        self.meshcat.SetTransform("pivot_axis", axis_transform)
+        
+        # Draw arc showing rotation path
+        # Arc is a thin cylinder from openft to pivot
+        arc_vector = pivot_point_world - openft_pos
+        arc_length = np.linalg.norm(arc_vector)
+        
+        if arc_length > 0.01:
+            arc_direction = arc_vector / arc_length
+            
+            # Create rotation to align cylinder with arc direction
+            z_axis = np.array([0, 0, 1])
+            if not np.allclose(arc_direction, z_axis):
+                axis = np.cross(z_axis, arc_direction)
+                if np.linalg.norm(axis) > 0.001:
+                    axis = axis / np.linalg.norm(axis)
+                    angle = np.arccos(np.clip(np.dot(z_axis, arc_direction), -1, 1))
+                    
+                    # Rodrigues' formula
+                    K = np.array([[0, -axis[2], axis[1]],
+                                 [axis[2], 0, -axis[0]],
+                                 [-axis[1], axis[0], 0]])
+                    R = np.eye(3) + np.sin(angle) * K + (1 - np.cos(angle)) * K @ K
+                    arc_rotation = RotationMatrix(R)
+                else:
+                    arc_rotation = RotationMatrix()
+            else:
+                arc_rotation = RotationMatrix()
+            
+            # Position arc
+            arc_center = openft_pos + arc_vector / 2
+            
+            # Update arc visualization
+            self.meshcat.SetObject(
+                "rotation_arc",
+                Cylinder(0.002, arc_length),
+                Rgba(0.0, 1.0, 1.0, 0.6)
+            )
+            self.meshcat.SetTransform(
+                "rotation_arc",
+                RigidTransform(arc_rotation, arc_center)
+            )
+    
     def create_target_frame_visualization(self):
         """Create visualization for target pose."""
         axis_length = 0.12
@@ -431,14 +538,11 @@ class AdaptiveDoorOpener:
         openft_pos = openft_pose.translation()
         openft_rot = openft_pose.rotation()
         
-        # Calculate force difference from baseline (if available)
-        if self.baseline_force is not None:
-            force_diff = self.current_force - self.baseline_force
-        else:
-            force_diff = self.current_force
+        # Use absolute force values for visualization
+        force_to_visualize = self.current_force * self.force_mask
         
         # Transform force from sensor frame to world frame
-        force_world = openft_rot @ force_diff
+        force_world = openft_rot @ force_to_visualize
         
         # Visualize reactive force (scale: 0.02 m per Newton)
         force_scale = 0.02
@@ -515,105 +619,173 @@ class AdaptiveDoorOpener:
                 RigidTransform(RotationMatrix(), head_position)
             )
     
-    def compute_motion_direction(self):
+    def compute_pivot_rotation_target(self):
         """
-        Compute desired motion direction based on force-torque readings.
+        Compute target pose for rotating around a virtual pivot point.
         
         Returns:
-            np.array: 3D motion direction in world frame
+            RigidTransform: Target pose for link_openft
         """
-        # Get force difference from baseline
-        if self.baseline_force is not None:
-            force_diff = self.current_force - self.baseline_force
-            torque_diff = self.current_torque - self.baseline_torque
-        else:
-            force_diff = self.current_force
-            torque_diff = self.current_torque
+        # Get current openft pose
+        current_pose = self.plant.EvalBodyPoseInWorld(
+            self.plant_context, self.openft_body
+        )
+        current_pos = current_pose.translation()
+        current_rot = current_pose.rotation()
         
-        # Apply force mask to only consider specified axes
-        force_diff = force_diff * self.force_mask
+        # Compute pivot point: 15cm in +z direction of link_openft frame (towards gripper)
+        pivot_offset_local = np.array([0.0, 0.0, self.pivot_distance])
+        pivot_point_world = current_pos + current_rot @ pivot_offset_local
         
-        # Get current openft rotation to transform from sensor to world frame
+        print(f"  Pivot point (world): {pivot_point_world}")
+        print(f"  Current openft pos: {current_pos}")
+        
+        # Compute rotation around vertical axis through pivot point
+        # Small rotation in yaw (around world z-axis)
+        angle = self.rotation_step * self.rotation_direction
+        self.current_rotation_angle += angle
+        
+        print(f"  Rotating by {np.degrees(angle):.1f} degrees (total: {np.degrees(self.current_rotation_angle):.1f})")
+        
+        # Create rotation matrix for yaw rotation
+        c = np.cos(angle)
+        s = np.sin(angle)
+        yaw_rotation = np.array([
+            [c, -s, 0],
+            [s, c, 0],
+            [0, 0, 1]
+        ])
+        
+        # Vector from pivot to current openft position
+        pivot_to_openft = current_pos - pivot_point_world
+        
+        # Rotate this vector around z-axis
+        new_pivot_to_openft = yaw_rotation @ pivot_to_openft
+        
+        # New position after rotation
+        target_position = pivot_point_world + new_pivot_to_openft
+        
+        # Also rotate the orientation to maintain alignment
+        target_rotation = RotationMatrix(yaw_rotation @ current_rot.matrix())
+        
+        return RigidTransform(target_rotation, target_position)
+    
+    def compute_motion_direction(self):
+        """
+        Compute desired motion direction based on control mode.
+        
+        Modes:
+        - ROTATING: Rotate around pivot to minimize forces
+        - PULLING: Pull straight back in -z of openft frame
+        
+        Returns:
+            np.array: 3D motion direction in world frame or None for rotation mode
+        """
+        # Get current openft pose
         openft_pose = self.plant.EvalBodyPoseInWorld(
             self.plant_context, self.openft_body
         )
         openft_rot = openft_pose.rotation()
         
-        # Transform force from sensor frame to world frame
-        force_world = openft_rot @ force_diff
+        # Get current forces
+        force_absolute = self.current_force * self.force_mask
         
-        # For first move, go straight in -z direction (openft frame)
-        if self.is_first_move:
-            print("First move: Moving in -z direction (openft frame)")
+        # Calculate lateral force magnitude (x and y only)
+        lateral_force = force_absolute.copy()
+        lateral_force[2] = 0  # Ignore z force
+        lateral_force_magnitude = np.linalg.norm(lateral_force)
+        
+        print(f"\n[Control Mode: {self.control_mode}]")
+        print(f"  Lateral force magnitude: {lateral_force_magnitude:.2f} N")
+        print(f"  Force components: x={force_absolute[0]:.2f}, y={force_absolute[1]:.2f}, z={force_absolute[2]:.2f}")
+        
+        # State machine for control modes
+        if self.control_mode == "ROTATING":
+            # Check if forces are already low enough to pull
+            if lateral_force_magnitude < self.force_tolerance:
+                print(f"  Lateral forces acceptable ({lateral_force_magnitude:.2f}N < {self.force_tolerance}N)")
+                print(f"  Aligned after {self.rotation_count} rotations")
+                print("  Switching to PULLING mode!")
+                self.control_mode = "PULLING"
+                self.is_first_move = True  # Reset for pulling mode
+                self.pull_count = 0  # Reset pull counter
+                return self.compute_motion_direction()  # Recursive call in PULLING mode
+            # Check if we've reached maximum rotations
+            elif self.rotation_count >= self.max_rotations:
+                print(f"  Maximum rotations reached ({self.max_rotations})")
+                print(f"  Best force achieved: {self.min_force_seen:.2f}N at angle {np.degrees(self.min_force_angle):.1f}°")
+                print("  Switching to PULLING mode despite high forces")
+                self.control_mode = "PULLING"
+                self.is_first_move = True  # Reset for pulling mode
+                self.pull_count = 0
+                return self.compute_motion_direction()  # Recursive call in PULLING mode
+            else:
+                # Continue rotating to minimize force
+                print(f"  Rotation {self.rotation_count+1} (force: {lateral_force_magnitude:.2f}N > {self.force_tolerance}N)")
+                print(f"  Rotating to minimize forces")
+            
+            # Check if this is an improvement
+            if lateral_force_magnitude < self.min_force_seen:
+                print(f"  Force improved! New minimum: {lateral_force_magnitude:.2f} N")
+                self.min_force_seen = lateral_force_magnitude
+                self.min_force_angle = self.current_rotation_angle
+                self.rotation_patience = 0
+            else:
+                self.rotation_patience += 1
+                print(f"  No improvement (patience: {self.rotation_patience}/{self.max_rotation_patience})")
+                
+                # If no improvement for several moves, reverse direction
+                if self.rotation_patience >= self.max_rotation_patience:
+                    self.rotation_direction *= -1.0
+                    self.rotation_patience = 0
+                    print(f"  Reversing rotation direction to {self.rotation_direction}")
+            
+            # Return None to signal rotation mode (handled separately)
+            return None
+            
+        elif self.control_mode == "PULLING":
+            # Check if forces are too high and need alignment
+            if lateral_force_magnitude > self.force_tolerance:
+                print(f"  Lateral forces too high ({lateral_force_magnitude:.2f}N > {self.force_tolerance}N)")
+                print(f"  Switching to ROTATING for alignment")
+                self.control_mode = "ROTATING"
+                self.rotation_count = 0
+                self.min_force_seen = lateral_force_magnitude
+                self.rotation_patience = 0
+                return self.compute_motion_direction()  # Recursive call in ROTATING mode
+            
+            # Increment pull count
+            self.pull_count += 1
+            
+            # After every few pulls, check alignment by going back to rotation mode
+            if self.pull_count > self.pulls_between_checks:
+                print(f"  Completed {self.pulls_between_checks} pulls, checking if re-alignment needed...")
+                # Reset counters and switch to rotation to check
+                self.control_mode = "ROTATING"
+                self.rotation_count = 0
+                self.pull_count = 0
+                self.min_force_seen = lateral_force_magnitude
+                self.rotation_patience = 0
+                return self.compute_motion_direction()  # Will immediately switch back to pulling if aligned
+            
+            # Simple pulling in -z direction of openft frame
+            print("  Pulling straight back (-z in openft frame)")
+            print(f"  Pull #{self.pull_count}/{self.pulls_between_checks}")
+            
+            # For first pull move
+            if self.is_first_move:
+                print("  First pull after alignment")
+                self.is_first_move = False
+            
             # Create motion in openft local frame (-z direction)
-            motion_local_first = np.array([0.0, 0.0, -1.0])
+            motion_local = np.array([0.0, 0.0, -1.0])
+            
             # Transform to world frame
-            self.motion_direction = openft_rot @ motion_local_first
-            print(f"  Motion direction in world frame: {self.motion_direction}")
-            self.is_first_move = False
+            self.motion_direction = openft_rot @ motion_local
+            print(f"  Pull direction (world): {self.motion_direction}")
+            
             return self.motion_direction
         
-        # Compute motion direction to reduce reactive forces
-        # Invert x and y components (move opposite to reactive force)
-        # Add pulling component in -z direction of openft frame
-        # TODO: inspect whether this is right
-        
-        # Separate compliance and pulling components
-        # Limit compliance magnitude to prevent overwhelming pulling
-        max_compliance_per_axis = 0.5  # Maximum compliance contribution
-        
-        compliance_component = np.array([
-            np.clip(-force_diff[0] * 0.1, -max_compliance_per_axis, max_compliance_per_axis) if 'x' in self.force_axes else 0.0,
-            np.clip(-force_diff[1] * 0.1, -max_compliance_per_axis, max_compliance_per_axis) if 'y' in self.force_axes else 0.0,
-            0.0
-        ])
-        
-        # Strong pulling component that dominates
-        pulling_component = np.array([0.0, 0.0, -3.0 * self.pull_weight])  # Strong pulling
-        
-        # Combine - pulling should dominate
-        motion_local = compliance_component + pulling_component
-        
-        # Debug output
-        print(f"  Force diff (local): {force_diff}")
-        print(f"  Compliance component: {compliance_component}")
-        print(f"  Pulling component: {pulling_component}")
-        print(f"  Combined motion (local): {motion_local}")
-        
-        # Normalize the local motion vector
-        motion_local_magnitude = np.linalg.norm(motion_local)
-        if motion_local_magnitude > 0.01:
-            motion_local = motion_local / motion_local_magnitude
-        else:
-            # If motion is too small, default to pure pulling
-            motion_local = np.array([0.0, 0.0, -1.0])
-            print("  Motion too small, defaulting to pure pull")
-        
-        print(f"  Normalized motion (local): {motion_local}")
-        
-        # Transform to world frame
-        motion_world = openft_rot @ motion_local
-        print(f"  Motion (world): {motion_world}")
-        
-        # Add torque-based adjustments (simplified)
-        # If there's significant torque, add a small rotational component
-        if np.linalg.norm(torque_diff) > self.torque_threshold:
-            # This is simplified - in practice you'd want more sophisticated torque handling
-            torque_world = openft_rot @ torque_diff
-            # Add small component based on torque (cross product gives perpendicular direction)
-            torque_adjustment = np.cross(torque_world, np.array([0, 0, 1])) * 0.1
-            motion_world += torque_adjustment
-        
-        # Always set motion direction (we've already normalized in local frame)
-        self.motion_direction = motion_world
-        
-        # Don't check force threshold since we always want to pull
-        # The pulling component ensures we always have motion
-        
-        # Store for next iteration
-        self.previous_direction = self.motion_direction.copy()
-        
-        return self.motion_direction
     
     def compute_target_pose(self):
         """
@@ -824,9 +996,14 @@ class AdaptiveDoorOpener:
         print("\n" + "="*60)
         print("Adaptive Door Opening Controller")
         print("="*60)
-        print("The robot will use force-torque feedback to adaptively open the door")
-        print("First move: 1cm in -x direction (world frame)")
-        print("Subsequent moves: Based on force-torque feedback")
+        print("Strategy:")
+        print("  1. Rotate around pivot point to minimize lateral forces")
+        print("  2. Pull straight back once aligned")
+        print(f"Settings:")
+        print(f"  - Pivot distance: {self.pivot_distance*100:.0f}cm from link_openft")
+        print(f"  - Force tolerance: {self.force_tolerance:.1f}N")
+        print(f"  - Rotation step: {np.degrees(self.rotation_step):.1f} degrees")
+        print(f"  - Pulls between checks: {self.pulls_between_checks}")
         print("Press Ctrl+C to stop")
         print("="*60 + "\n")
         
@@ -835,14 +1012,12 @@ class AdaptiveDoorOpener:
         while self.get_force_torque_data() is None:
             time.sleep(0.1)
         
-        # Set baseline forces (current reading with door handle gripped)
-        print("Setting baseline force-torque readings...")
+        # Note: We now use absolute forces instead of baseline differences
+        print("Getting initial force-torque readings...")
         time.sleep(1.0)  # Let readings stabilize
         self.get_force_torque_data()
-        self.baseline_force = self.current_force.copy()
-        self.baseline_torque = self.current_torque.copy()
-        print(f"Baseline force: {self.baseline_force}")
-        print(f"Baseline torque: {self.baseline_torque}")
+        print(f"Initial force: {self.current_force}")
+        print(f"Initial torque: {self.current_torque}")
         
         iteration = 0
         motion_count = 0
@@ -860,56 +1035,64 @@ class AdaptiveDoorOpener:
                     force_before = self.current_force.copy()
                     torque_before = self.current_torque.copy()
                     
-                    # Compute motion direction
-                    self.compute_motion_direction()
+                    # Update pivot visualization
+                    self.update_pivot_visualization()
+                    
+                    # Compute motion based on control mode
+                    motion_result = self.compute_motion_direction()
                     
                     # Update visualizations
                     self.update_force_visualizations()
                     
-                    # Check if we should move - always move after computing direction
-                    if np.linalg.norm(self.motion_direction) > 0.01:  # Lower threshold
-                        # Compute target pose
+                    # Handle rotation mode vs pulling mode
+                    if self.control_mode == "ROTATING" and motion_result is None:
+                        # Rotation mode - compute rotation target
+                        self.target_pose = self.compute_pivot_rotation_target()
+                        
+                        # Visualize target
+                        self.meshcat.SetTransform("target_pose", self.target_pose)
+                        
+                        # Execute rotation
+                        print(f"\n[Rotation {self.rotation_count+1}]")
+                        success = self.execute_motion_step()
+                        if success:
+                            self.rotation_count += 1  # Increment after successful rotation
+                        
+                    elif motion_result is not None and np.linalg.norm(self.motion_direction) > 0.01:
+                        # Pulling mode - compute translation target
                         self.compute_target_pose()
                         
                         # Execute motion
-                        print(f"\n[Motion {motion_count+1}]")
-                        masked_force_diff = (self.current_force - self.baseline_force) * self.force_mask
-                        print(f"  Force diff (raw): {self.current_force - self.baseline_force}")
-                        print(f"  Force diff (masked): {masked_force_diff}")
+                        print(f"\n[Pull {motion_count+1}]")
+                        masked_force = self.current_force * self.force_mask
+                        print(f"  Force absolute (raw): {self.current_force}")
+                        print(f"  Force absolute (masked): {masked_force}")
                         print(f"  Active axes: {self.force_axes}")
                         print(f"  Motion dir (magnitude={np.linalg.norm(self.motion_direction):.3f}): {self.motion_direction}")
                         
                         success = self.execute_motion_step()
-                        
-                        if success:
-                            motion_count += 1
-                            
-                            # Wait for motion to complete and forces to stabilize
-                            time.sleep(15.0)  # 3 second pause between motions
-                            
-                            # Get force after movement
-                            self.get_force_torque_data()
-                            force_after = self.current_force.copy()
-                            torque_after = self.current_torque.copy()
-                            
-                            # Calculate force change
-                            force_change = force_after - force_before
-                            torque_change = torque_after - torque_before
-                            
-                            print(f"  Force change: {force_change}")
-                            print(f"  Force magnitude change: {np.linalg.norm(force_after) - np.linalg.norm(force_before):.3f} N")
-                            
-                            # Update baseline if force reduced significantly
-                            if np.linalg.norm(force_after) < np.linalg.norm(force_before) - 0.5:
-                                print("  Force reduced - updating baseline")
-                                self.baseline_force = force_after.copy()
-                                self.baseline_torque = torque_after.copy()
-                        else:
-                            print("  Motion failed - IK solution not found")
                     else:
-                        # No significant forces detected
-                        if iteration % 20 == 0:
-                            print(f"Iteration {iteration}: No significant forces detected")
+                        success = False
+                    
+                    if success:
+                        motion_count += 1
+                        
+                        # Wait for motion to complete and forces to stabilize
+                        time.sleep(2.0)  # 2 second pause between motions
+                        
+                        # Get force after movement
+                        self.get_force_torque_data()
+                        force_after = self.current_force.copy()
+                        torque_after = self.current_torque.copy()
+                        
+                        # Calculate force change
+                        force_change = force_after - force_before
+                        torque_change = torque_after - torque_before
+                        
+                        print(f"  Force change: {force_change}")
+                        print(f"  Force magnitude change: {np.linalg.norm(force_after) - np.linalg.norm(force_before):.3f} N")
+                    else:
+                        print("  Motion failed - IK solution not found")
                 
                 # Update visualization
                 self.diagram.ForcedPublish(self.diagram_context)
