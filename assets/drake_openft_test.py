@@ -32,7 +32,7 @@ from pydrake.all import (
 
 
 class XArmOpenFTController:
-    def __init__(self, use_ik_control=False, enable_real_robot=False, enable_sensor_collection=False):
+    def __init__(self, use_ik_control=False, enable_real_robot=False, enable_sensor_collection=False, xarm_ip=None):
         # Start meshcat first
         self.meshcat = StartMeshcat()
         
@@ -40,12 +40,29 @@ class XArmOpenFTController:
         self.use_ik_control = use_ik_control
         self.enable_real_robot = enable_real_robot
         self.enable_sensor_collection = enable_sensor_collection
+        self.xarm_ip = xarm_ip
+        
+        # Get initial positions from xARM if IP provided
+        self.xarm_initial_positions = None
+        if self.xarm_ip:
+            print(f"\n{'='*60}")
+            print(f"Attempting to connect to xARM at {self.xarm_ip}")
+            print(f"{'='*60}")
+            self.xarm_initial_positions = self.get_xarm_positions()
+            if self.xarm_initial_positions is None:
+                print("WARNING: Failed to get xARM positions, using default positions")
+                print("Check that:")
+                print("  1. xARM is powered on and connected")
+                print("  2. IP address is correct") 
+                print("  3. xarm-python-sdk is installed: pip install xarm-python-sdk")
+                print(f"{'='*60}\n")
         
         # Initialize LCM if real robot mode is enabled
         if self.enable_real_robot:
             self.lc = lcm.LCM()
             self.joint_state_msg = JointState()
             print("LCM initialized for real robot control")
+            print("Joint states will be published when positions change")
         
         # Initialize ZMQ for sensor data collection if enabled
         self.sensor_data = None
@@ -86,6 +103,62 @@ class XArmOpenFTController:
         print(f"Meshcat URL: {self.meshcat.web_url()}")
         print(f"Open this URL in your browser to view the robot")
         print(f"{'='*60}\n")
+    
+    def get_xarm_positions(self):
+        """Get current joint positions from xARM robot."""
+        try:
+            from xarm.wrapper import XArmAPI
+            
+            print(f"Connecting to xARM at {self.xarm_ip}...")
+            arm = XArmAPI(self.xarm_ip, do_not_open=False, is_radian=True)
+            
+            # Clear any errors and enable
+            arm.clean_error()
+            arm.clean_warn()
+            
+            # Get current joint angles (returns [code, angles])
+            code, angles = arm.get_servo_angle(is_radian=True)
+            
+            if code == 0 and angles:
+                print(f"Got xARM joint positions (radians):")
+                for i, angle in enumerate(angles[:6]):
+                    print(f"  joint{i+1}: {angle:.4f} rad ({np.degrees(angle):.2f} deg)")
+                
+                # Also get and print TCP pose for verification
+                code, tcp_pose = arm.get_position(is_radian=True)
+                if code == 0 and tcp_pose:
+                    print(f"xARM TCP pose (from robot):")
+                    # Note: xARM returns position in mm, need to convert to meters for comparison
+                    print(f"  Position: x={tcp_pose[0]:.1f} mm ({tcp_pose[0]/1000:.3f} m)")
+                    print(f"           y={tcp_pose[1]:.1f} mm ({tcp_pose[1]/1000:.3f} m)")
+                    print(f"           z={tcp_pose[2]:.1f} mm ({tcp_pose[2]/1000:.3f} m)")
+                    print(f"  Rotation: rx={tcp_pose[3]:.3f}, ry={tcp_pose[4]:.3f}, rz={tcp_pose[5]:.3f} rad")
+                
+                # Double-check by also getting angles in degrees
+                code_deg, angles_deg = arm.get_servo_angle(is_radian=False)
+                if code_deg == 0 and angles_deg:
+                    print(f"\nDouble-check - xARM joint positions (degrees):")
+                    for i, angle in enumerate(angles_deg[:6]):
+                        print(f"  joint{i+1}: {angle:.2f} deg (converted: {np.radians(angle):.4f} rad)")
+                
+                # xARM returns 6 values for xARM6
+                if len(angles) >= 6:
+                    arm.disconnect()
+                    return angles[:6]  # Return first 6 joint angles
+                else:
+                    print(f"Warning: Expected 6 joint angles, got {len(angles)}")
+            else:
+                print(f"Failed to get xARM positions, code: {code}")
+            
+            arm.disconnect()
+            
+        except ImportError:
+            print("Error: xarm library not installed. Install with: pip install xarm-python-sdk")
+        except Exception as e:
+            print(f"Error connecting to xARM: {e}")
+            print("Make sure the xARM is powered on and the IP address is correct")
+        
+        return None
     
     def setup_simulation(self):
         """Setup Drake simulation with the xarm6_openft_gripper robot."""
@@ -169,20 +242,39 @@ class XArmOpenFTController:
         self.arm_joint_names = [f"joint{i+1}" for i in range(6)]
         self.gripper_joint_name = "drive_joint"
         
-        # Set initial positions to avoid singularities
+        # Set initial positions
         initial_positions = np.zeros(self.plant.num_positions())
-        # Set specific initial configuration to avoid gimbal lock
-        initial_joint_angles = [0.0, -0.5, -0.5, 0.0, -0.5, 0.0]  # Slightly bent elbow configuration
+        
+        # Use xARM positions if available, otherwise use default configuration
+        if self.xarm_initial_positions is not None:
+            print("\nInitializing Drake with xARM joint positions:")
+            initial_joint_angles = self.xarm_initial_positions
+        else:
+            # Default configuration to avoid singularities/gimbal lock
+            initial_joint_angles = [0.0, -0.5, -0.5, 0.0, -0.5, 0.0]  # Slightly bent elbow configuration
+        
+        # Set joint positions and print for verification
         for i, joint_name in enumerate(self.arm_joint_names):
             try:
                 joint = self.plant.GetJointByName(joint_name)
                 joint_index = joint.position_start()
                 if i < len(initial_joint_angles):
                     initial_positions[joint_index] = initial_joint_angles[i]
-            except:
-                pass
+                    if self.xarm_initial_positions is not None:
+                        print(f"  Setting {joint_name} (index {joint_index}) = {initial_joint_angles[i]:.4f} rad")
+            except Exception as e:
+                print(f"  Error setting {joint_name}: {e}")
         
         self.plant.SetPositions(self.plant_context, initial_positions)
+        
+        # Verify positions were set correctly
+        if self.xarm_initial_positions is not None:
+            actual_positions = self.plant.GetPositions(self.plant_context)
+            print("\nVerifying Drake positions after setting:")
+            for i, joint_name in enumerate(self.arm_joint_names):
+                joint = self.plant.GetJointByName(joint_name)
+                joint_index = joint.position_start()
+                print(f"  {joint_name}: {actual_positions[joint_index]:.4f} rad")
         
         # Reset camera for better view
         self.meshcat.SetCameraPose(
@@ -194,9 +286,10 @@ class XArmOpenFTController:
         """Setup sliders for direct joint control."""
         print("Setting up joint control sliders...")
         
-        # Set all joints to zero for joint control mode
-        zero_positions = np.zeros(self.plant.num_positions())
-        self.plant.SetPositions(self.plant_context, zero_positions)
+        # For joint control mode, if we don't have xARM positions, set to zero
+        if self.xarm_initial_positions is None:
+            zero_positions = np.zeros(self.plant.num_positions())
+            self.plant.SetPositions(self.plant_context, zero_positions)
         
         # Create joint sliders
         for i, joint_name in enumerate(self.arm_joint_names):
@@ -208,10 +301,15 @@ class XArmOpenFTController:
                 lower = lower[0]
                 upper = upper[0]
             
-            # Start at zero for joint control mode
-            initial_value = 0.0
+            # Get initial value - use xARM position if available, otherwise current position
+            if self.xarm_initial_positions is not None and i < len(self.xarm_initial_positions):
+                initial_value = self.xarm_initial_positions[i]
+            else:
+                # Get current position from plant context
+                current_positions = self.plant.GetPositions(self.plant_context)
+                initial_value = current_positions[joint.position_start()]
             
-            # Add slider with zero as default
+            # Add slider with initial value
             self.meshcat.AddSlider(
                 name=joint_name,
                 min=lower,
@@ -219,7 +317,7 @@ class XArmOpenFTController:
                 step=0.01,
                 value=initial_value
             )
-            print(f"  Added slider for {joint_name}: [{lower:.2f}, {upper:.2f}]")
+            print(f"  Added slider for {joint_name}: [{lower:.2f}, {upper:.2f}] = {initial_value:.3f}")
         
         # Gripper slider
         gripper_joint = self.plant.GetJointByName(self.gripper_joint_name)
@@ -242,28 +340,35 @@ class XArmOpenFTController:
         """Setup sliders for inverse kinematics control."""
         print("Setting up IK control sliders...")
         
-        # Get current end-effector pose
+        # Get current end-effector pose from the plant (which has xARM positions if available)
         if self.end_effector_body:
             ee_pose = self.plant.EvalBodyPoseInWorld(
                 self.plant_context, self.end_effector_body
             )
             current_pos = ee_pose.translation()
             rpy = RollPitchYaw(ee_pose.rotation())
+            
+            # If we got xARM positions, print the computed end-effector pose
+            if self.xarm_initial_positions is not None:
+                print(f"  Computed end-effector pose from xARM positions (Drake FK):")
+                print(f"    Position: x={current_pos[0]:.3f} m, y={current_pos[1]:.3f} m, z={current_pos[2]:.3f} m")
+                print(f"    Orientation (RPY): r={rpy.roll_angle():.3f}, p={rpy.pitch_angle():.3f}, y={rpy.yaw_angle():.3f} rad")
+                print(f"  Compare this with the xARM TCP pose printed above to verify forward kinematics match")
         else:
             current_pos = np.array([0.3, 0.0, 0.3])
             rpy = RollPitchYaw(0, 0, 0)
         
-        # Position sliders
+        # Position sliders - initialize to current end-effector position
         self.meshcat.AddSlider("target_x", -0.8, 0.8, 0.01, current_pos[0])
         self.meshcat.AddSlider("target_y", -0.8, 0.8, 0.01, current_pos[1])
         self.meshcat.AddSlider("target_z", 0.0, 1.0, 0.01, current_pos[2])
-        print(f"  Added position sliders (x,y,z)")
+        print(f"  Added position sliders (x,y,z) initialized to current pose")
         
-        # Orientation sliders (in radians)
+        # Orientation sliders (in radians) - initialize to current end-effector orientation
         self.meshcat.AddSlider("target_roll", -np.pi, np.pi, 0.01, rpy.roll_angle())
         self.meshcat.AddSlider("target_pitch", -np.pi, np.pi, 0.01, rpy.pitch_angle())
         self.meshcat.AddSlider("target_yaw", -np.pi, np.pi, 0.01, rpy.yaw_angle())
-        print(f"  Added orientation sliders (roll,pitch,yaw)")
+        print(f"  Added orientation sliders (roll,pitch,yaw) initialized to current pose")
         
         # Gripper slider
         self.meshcat.AddSlider("gripper", 0.0, 0.85, 0.01, 0.0)
@@ -289,8 +394,9 @@ class XArmOpenFTController:
         v_upper = self.plant.GetVelocityUpperLimits()
         self.diff_ik_params.set_joint_velocity_limits((v_lower, v_upper))
         
-        # Set end-effector velocity gain (higher = more aggressive tracking)
-        self.diff_ik_params.set_end_effector_velocity_gain(2.0)
+        # Note: set_end_effector_velocity_gain may not be available in all Drake versions
+        # If you have a newer version, you can uncomment the following:
+        # self.diff_ik_params.set_end_effector_velocity_gain(2.0)
         
         # Enable all 6 DOF for end-effector control (3 translation + 3 rotation)
         # This ensures all rotational DOF are properly controlled
@@ -299,6 +405,14 @@ class XArmOpenFTController:
         
         # Create target visualization
         self.create_target_visualization()
+        
+        # Position the target frame at the current end-effector pose
+        if self.end_effector_body:
+            ee_pose = self.plant.EvalBodyPoseInWorld(
+                self.plant_context, self.end_effector_body
+            )
+            self.meshcat.SetTransform("target_frame", ee_pose)
+            print(f"  Target frame initialized at current end-effector pose")
     
     def create_target_visualization(self):
         """Create visualization for the target pose."""
@@ -658,18 +772,33 @@ class XArmOpenFTController:
         iteration_count = 0
         print_interval = 100  # Print every 100 iterations (about 1 second at 10ms delay)
         
+        # Track previous positions to detect changes
+        previous_positions = None
+        position_tolerance = 1e-6  # Tolerance for position change detection
+        
+        # Publish initial state if real robot mode
+        if self.enable_real_robot:
+            self.publish_joint_states()
+            print("[Joint Control] Published initial joint states to LCM")
+        
         try:
             while True:
                 iteration_count += 1
+                # Store old positions for comparison
+                old_positions = self.plant.GetPositions(self.plant_context).copy()
+                
                 # Get current positions (all DOF)
                 current_positions = self.plant.GetPositions(self.plant_context)
                 
                 # Update arm joint positions from sliders
+                positions_changed = False
                 for joint_name in self.arm_joint_names:
                     try:
                         joint = self.plant.GetJointByName(joint_name)
                         joint_index = joint.position_start()
                         value = self.meshcat.GetSliderValue(joint_name)
+                        if abs(current_positions[joint_index] - value) > position_tolerance:
+                            positions_changed = True
                         current_positions[joint_index] = value
                     except:
                         pass
@@ -679,6 +808,8 @@ class XArmOpenFTController:
                     gripper_joint = self.plant.GetJointByName(self.gripper_joint_name)
                     gripper_index = gripper_joint.position_start()
                     gripper_value = self.meshcat.GetSliderValue(self.gripper_joint_name)
+                    if abs(current_positions[gripper_index] - gripper_value) > position_tolerance:
+                        positions_changed = True
                     current_positions[gripper_index] = gripper_value
                 except:
                     pass
@@ -686,8 +817,12 @@ class XArmOpenFTController:
                 # Set all positions
                 self.plant.SetPositions(self.plant_context, current_positions)
                 
-                # Publish joint states to LCM if real robot mode is enabled
-                self.publish_joint_states()
+                # Publish joint states to LCM only if positions changed
+                if positions_changed and self.enable_real_robot:
+                    self.publish_joint_states()
+                    # Only print first few times and then occasionally
+                    if iteration_count < 5 or iteration_count % 100 == 0:
+                        print(f"[Joint Control] Published joint states to LCM")
                 
                 # Update gripper COM axes visualization
                 if self.gripper_com_body:
@@ -754,6 +889,19 @@ class XArmOpenFTController:
         iteration_count = 0
         print_interval = 20  # Print every 20 iterations (about 1 second at 50ms delay)
         
+        # Log initial joint configuration
+        initial_q = self.plant.GetPositions(self.plant_context)
+        print(f"Initial joint configuration before IK:")
+        for i, joint_name in enumerate(self.arm_joint_names):
+            joint = self.plant.GetJointByName(joint_name)
+            joint_idx = joint.position_start()
+            print(f"  {joint_name}: {initial_q[joint_idx]:.4f} rad ({np.degrees(initial_q[joint_idx]):.2f} deg)")
+        
+        # Publish initial state if real robot mode
+        if self.enable_real_robot:
+            self.publish_joint_states()
+            print("[IK Control] Published initial joint states to LCM")
+        
         try:
             while True:
                 iteration_count += 1
@@ -815,11 +963,19 @@ class XArmOpenFTController:
                     q_upper = self.plant.GetPositionUpperLimits()
                     q_new = np.clip(q_new, q_lower, q_upper)
                     
+                    # Check if positions actually changed
+                    position_tolerance = 1e-6
+                    positions_changed = np.any(np.abs(q_new - q_current) > position_tolerance)
+                    
                     # Set new positions
                     self.plant.SetPositions(self.plant_context, q_new)
-                
-                # Publish joint states to LCM if real robot mode is enabled
-                self.publish_joint_states()
+                    
+                    # Publish joint states to LCM only if positions changed and real robot mode is enabled
+                    if positions_changed and self.enable_real_robot:
+                        self.publish_joint_states()
+                        # Only print first few times and then occasionally
+                        if iteration_count < 5 or iteration_count % 100 == 0:
+                            print(f"[IK Control] Published joint states to LCM")
                 
                 # Update gripper COM axes visualization
                 if self.gripper_com_body:
@@ -1192,6 +1348,11 @@ def main():
         action="store_true",
         help="Enable sensor data collection via ZMQ (port 5555)"
     )
+    parser.add_argument(
+        "--xarm",
+        type=str,
+        help="xARM IP address to read initial joint positions (e.g., 192.168.1.210)"
+    )
     args = parser.parse_args()
     
     print("\n" + "="*60)
@@ -1200,6 +1361,8 @@ def main():
         print("Real Robot Mode: ENABLED - Publishing to LCM")
     if args.sensor:
         print("Sensor Collection: ENABLED - Subscribing to ZMQ port 5555")
+    if args.xarm:
+        print(f"xARM Sync: ENABLED - Reading positions from {args.xarm}")
     print("="*60)
     
     # Handle calibration mode
@@ -1207,7 +1370,8 @@ def main():
         controller = XArmOpenFTController(
             use_ik_control=False, 
             enable_real_robot=args.real,
-            enable_sensor_collection=args.sensor
+            enable_sensor_collection=args.sensor,
+            xarm_ip=args.xarm
         )
         controller.run_calibration()
     else:
@@ -1215,7 +1379,8 @@ def main():
         controller = XArmOpenFTController(
             use_ik_control=args.ik_control, 
             enable_real_robot=args.real,
-            enable_sensor_collection=args.sensor
+            enable_sensor_collection=args.sensor,
+            xarm_ip=args.xarm
         )
         controller.run()
 
