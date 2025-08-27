@@ -64,9 +64,9 @@ class ContinuousDoorOpener:
         xarm_ip=None, 
         enable_real_robot=True,
         pivot_distance=0.2,
-        force_threshold=10.0,
-        rotation_gain=0.005,  # rad/N of error
-        pull_speed=0.01,  # m per step
+        force_threshold=7.0,  # More stable threshold
+        rotation_gain=0.01,  # Moderate rotation gain
+        pull_speed=0.015,  # 15mm base pull (can boost when aligned)
         sensor_delay=0.2,  # 200ms delay
         prediction_gain=0.3  # How much to trust force rate prediction
     ):
@@ -98,13 +98,18 @@ class ContinuousDoorOpener:
         self.prediction_gain = prediction_gain
         
         # Motion limits
-        self.max_rotation_per_step = 0.15  # 8.6 degrees max per step
+        self.max_rotation_per_step = 0.2  # 11.5 degrees max per step
         self.min_rotation_per_step = 0.005  # 0.3 degrees min (deadband)
         
         # Force history for prediction
         self.force_history = deque(maxlen=20)  # Store more history for rate estimation
         self.last_motion_time = time.time()
         self.motion_history = deque(maxlen=10)  # Store recent motions for prediction
+        
+        # Rotation damping to prevent oscillation
+        self.last_rotation_direction = 0  # Track last rotation sign
+        self.rotation_history = deque(maxlen=5)  # Track recent rotations
+        self.oscillation_damping = 0.5  # Reduce rotation when oscillating
         
         # Door parameters
         self.door_opens_clockwise = True  # Microwave door opens clockwise
@@ -314,8 +319,44 @@ class ContinuousDoorOpener:
         force_x = force_state.x_force()
         lateral_force = force_state.lateral_force()
         
-        # Compute rotation based on force error
+        # Compute rotation based on force error with adaptive gain
         rotation_angle = 0.0
+        
+        # Safety check for extreme forces
+        if lateral_force > 80:
+            print(f"  EXTREME FORCES ({lateral_force:.1f}N)! Rotation only, no pull")
+            # Only rotate, no pulling when forces are dangerously high
+            pull_safety_factor = 0.0
+        else:
+            pull_safety_factor = 1.0
+        
+        # Adaptive rotation gain based on force magnitude
+        # Much gentler at high forces to avoid overshoot
+        if lateral_force > 60:
+            adaptive_gain = self.rotation_gain * 0.3  # 30% gain at very high forces
+        elif lateral_force > 40:
+            adaptive_gain = self.rotation_gain * 0.5  # 50% gain at high forces
+        elif lateral_force > 20:
+            adaptive_gain = self.rotation_gain * 0.7  # 70% gain at medium forces
+        elif lateral_force > 10:
+            adaptive_gain = self.rotation_gain * 0.9  # 90% gain at low-medium forces
+        else:
+            adaptive_gain = self.rotation_gain * 1.2  # 120% gain at low forces (be aggressive)
+        
+        # Check for oscillation by looking at rotation history
+        oscillating = False
+        if len(self.rotation_history) >= 2:
+            # Check if we're switching rotation direction frequently
+            recent_signs = [np.sign(r) for r in self.rotation_history if abs(r) > 0.01]
+            if len(recent_signs) >= 2:
+                # If last two rotations were in opposite directions, we're oscillating
+                if recent_signs[-1] * recent_signs[-2] < 0:
+                    oscillating = True
+                    adaptive_gain *= self.oscillation_damping
+                    print(f"  Oscillation detected, reducing gain to {adaptive_gain:.4f}")
+        
+        # Check if we're in the "success zone" (good alignment)
+        in_success_zone = abs(force_x) <= self.force_threshold
         
         # Determine if we're on the wrong side of the force threshold
         wrong_side = False
@@ -324,46 +365,92 @@ class ContinuousDoorOpener:
             if force_x > self.force_threshold:
                 wrong_side = True
                 force_error = force_x - self.force_threshold
-                # Must rotate counter-clockwise (negative)
-                rotation_angle = -abs(force_error * self.rotation_gain)
+                # Use gentler exponential scaling for large errors
+                if force_error > 30:
+                    # Strong exponential damping for very large errors
+                    rotation_angle = -adaptive_gain * 15 * (1 - np.exp(-force_error/30))
+                elif force_error > 15:
+                    # Moderate damping
+                    rotation_angle = -adaptive_gain * force_error * 0.7
+                else:
+                    rotation_angle = -force_error * adaptive_gain
                 print(f"  Wrong side! Force {force_x:.1f}N > {self.force_threshold}N, rotating CCW")
-            elif force_x < 0:
-                # On correct side but can optimize
-                force_error = abs(force_x)  # Want to minimize negative force magnitude
-                # Rotate CLOCKWISE (positive) to reduce negative force magnitude
-                rotation_angle = +1.0 * min(force_error * self.rotation_gain * 0.5, self.max_rotation_per_step)
-                print(f"  Optimizing: Force {force_x:.1f}N, rotating CW to reduce magnitude")
+            elif force_x < -self.force_threshold:
+                # On correct side but force magnitude is high
+                force_error = abs(force_x) - self.force_threshold
+                # Only correct if force is significantly negative
+                if force_error > 8:  # Only rotate if more than 8N below threshold
+                    # Very gentle correction when optimizing
+                    rotation_angle = +adaptive_gain * min(force_error * 0.2, 5)
+                    print(f"  Optimizing: Force {force_x:.1f}N, gentle CW rotation")
+            elif in_success_zone and lateral_force < 15:
+                # In success zone with low lateral forces - minimal adjustment
+                print(f"  Success zone! Force {force_x:.1f}N, minimal adjustment")
         else:
             # For counter-clockwise door: negative force means rotate clockwise
             if force_x < -self.force_threshold:
                 wrong_side = True
                 force_error = abs(force_x) - self.force_threshold
-                # Must rotate clockwise (positive)
-                rotation_angle = abs(force_error * self.rotation_gain)
+                if force_error > 20:
+                    rotation_angle = adaptive_gain * 20 * (1 - np.exp(-force_error/20))
+                else:
+                    rotation_angle = force_error * adaptive_gain
                 print(f"  Wrong side! Force {force_x:.1f}N < -{self.force_threshold}N, rotating CW")
-            elif force_x > 0:
-                # On correct side but can optimize
-                force_error = abs(force_x)
-                # Rotate COUNTER-CLOCKWISE (negative) to reduce positive force magnitude
-                rotation_angle = -1.0 * min(force_error * self.rotation_gain * 0.5, self.max_rotation_per_step)
-                print(f"  Optimizing: Force {force_x:.1f}N, rotating CCW to reduce magnitude")
+            elif force_x > self.force_threshold:
+                force_error = force_x - self.force_threshold
+                if force_error > 5:
+                    rotation_angle = -adaptive_gain * min(force_error * 0.3, 10)
+                    print(f"  Optimizing: Force {force_x:.1f}N, gentle CCW rotation")
         
-        # Apply rotation limits
-        rotation_angle = np.clip(rotation_angle, -self.max_rotation_per_step, self.max_rotation_per_step)
+        # Apply rotation limits with adaptive maximum based on force
+        if lateral_force > 50:
+            max_rotation = min(self.max_rotation_per_step * 0.4, 0.08)  # Max 4.6 degrees at very high force
+        elif lateral_force > 30:
+            max_rotation = min(self.max_rotation_per_step * 0.6, 0.12)  # Max 6.9 degrees at high force
+        else:
+            max_rotation = self.max_rotation_per_step
+        
+        rotation_angle = np.clip(rotation_angle, -max_rotation, max_rotation)
+        
+        # Store rotation in history
+        self.rotation_history.append(rotation_angle)
         
         # Apply deadband to avoid jitter
         if abs(rotation_angle) < self.min_rotation_per_step:
             rotation_angle = 0.0
         
-        # Compute pull component (always pull back, but reduce when rotating heavily)
-        # Reduce pull speed when making large corrections
-        rotation_factor = 1.0 - min(abs(rotation_angle) / self.max_rotation_per_step, 0.8)
-        pull_distance = self.pull_speed * rotation_factor
+        # Compute pull component with force-adaptive strategy
+        # Boost when aligned, reduce when fighting the door
+        if in_success_zone and lateral_force < 10:
+            # Perfect alignment - boost pull speed!
+            pull_distance = self.pull_speed * 1.5  # 150% speed
+            print(f"  Aligned! Boosting pull to {pull_distance*1000:.1f}mm")
+        elif lateral_force < 15:
+            # Good alignment - normal speed
+            pull_distance = self.pull_speed
+        elif lateral_force < 25:
+            # Moderate forces - slight reduction
+            pull_distance = self.pull_speed * 0.8
+        elif lateral_force < 40:
+            # High forces - significant reduction
+            pull_distance = self.pull_speed * 0.6
+            print(f"  High forces ({lateral_force:.1f}N), reducing pull to 60%")
+        elif lateral_force < 60:
+            # Very high forces - major reduction
+            pull_distance = self.pull_speed * 0.4
+            print(f"  Very high forces ({lateral_force:.1f}N), reducing pull to 40%")
+        else:
+            # Extreme forces - minimal pull
+            pull_distance = self.pull_speed * 0.2
+            print(f"  Extreme forces ({lateral_force:.1f}N), minimal pull 20%")
         
-        # If forces are very high, focus more on rotation than pulling
-        if lateral_force > self.force_threshold * 2:
-            pull_distance *= 0.2  # Reduce pull to 20% when forces are very high
-            print(f"  High forces ({lateral_force:.1f}N), reducing pull")
+        # Further reduce pull if rotating heavily
+        if abs(rotation_angle) > self.max_rotation_per_step * 0.5:
+            rotation_penalty = 0.7  # 30% reduction when rotating a lot
+            pull_distance *= rotation_penalty
+        
+        # Apply safety factor (0 when forces > 80N)
+        pull_distance *= pull_safety_factor
         
         # Create pull vector in openft local frame (-z direction)
         pull_local = np.array([0.0, 0.0, -pull_distance])
@@ -727,7 +814,7 @@ class ContinuousDoorOpener:
                 RigidTransform(RotationMatrix(), head_position)
             )
     
-    def execute_motion(self, target_pose: RigidTransform, speed: float = 0.15) -> bool:
+    def execute_motion(self, target_pose: RigidTransform, speed: float = 0.5) -> bool:
         """Execute motion using differential IK."""
         # Use differential IK to move towards target
         result = DoDifferentialInverseKinematics(
@@ -775,11 +862,6 @@ class ContinuousDoorOpener:
         if not self.enable_real_robot or not self.arm:
             return
         
-        self.arm.clean_error()
-        self.arm.clean_warn()
-        self.arm.set_state(0)
-        self.arm.set_mode(0)
-        
         # Get current joint positions from simulation
         q = self.plant.GetPositions(self.plant_context)
         
@@ -789,9 +871,19 @@ class ContinuousDoorOpener:
             joint_idx = joint.position_start()
             positions.append(q[joint_idx])
         
+        # Send command with higher speed
         code = self.arm.set_servo_angle(angle=positions, speed=speed, wait=True, is_radian=True)
         if code != 0:
-            print(f"Error commanding xARM: code {code}")
+            # Only clean errors if command actually failed
+            print(f"Error commanding xARM: code {code}, attempting recovery")
+            self.arm.clean_error()
+            self.arm.clean_warn()
+            self.arm.set_state(0)
+            self.arm.set_mode(0)
+            # Retry command once
+            code = self.arm.set_servo_angle(angle=positions, speed=speed, wait=True, is_radian=True)
+            if code != 0:
+                print(f"Retry failed: code {code}")
     
     def run(self):
         """Main continuous control loop."""
@@ -823,7 +915,7 @@ class ContinuousDoorOpener:
         print("\nStarting continuous motion...\n")
         
         last_print_time = time.time()
-        control_rate = 50  # Hz
+        control_rate = 25  # Hz - reduced for larger steps with less overhead
         dt = 1.0 / control_rate
         
         try:
@@ -866,9 +958,9 @@ class ContinuousDoorOpener:
                     self.update_visualizations(force_to_use, translation, rotation_angle)
                     self.meshcat.SetTransform("target_pose", target_pose)
                     
-                    # Execute motion
+                    # Execute motion with higher speed
                     if np.linalg.norm(translation) > 0.001 or abs(rotation_angle) > 0.001:
-                        success = self.execute_motion(target_pose, speed=0.2)
+                        success = self.execute_motion(target_pose, speed=0.8)
                         if success:
                             self.motion_count += 1
                             self.last_motion_time = time.time()
@@ -933,19 +1025,19 @@ def main():
     parser.add_argument(
         "--force_threshold",
         type=float,
-        default=10.0,
+        default=7.0,
         help="Target force threshold (N)"
     )
     parser.add_argument(
         "--rotation_gain",
         type=float,
-        default=0.005,
+        default=0.01,
         help="Rotation speed per Newton of error (rad/N)"
     )
     parser.add_argument(
         "--pull_speed",
         type=float,
-        default=0.01,
+        default=0.015,
         help="Pull distance per step (meters)"
     )
     parser.add_argument(
