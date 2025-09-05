@@ -68,7 +68,8 @@ class ContinuousDoorOpener:
         rotation_gain=0.01,  # Moderate rotation gain
         pull_speed=0.015,  # 15mm base pull (can boost when aligned)
         sensor_delay=0.2,  # 200ms delay
-        prediction_gain=0.3  # How much to trust force rate prediction
+        prediction_gain=0.3,  # How much to trust force rate prediction
+        door_opens_clockwise=True  # Door opening direction
     ):
         """
         Initialize the continuous door opener controller.
@@ -112,7 +113,7 @@ class ContinuousDoorOpener:
         self.oscillation_damping = 0.5  # Reduce rotation when oscillating
         
         # Door parameters
-        self.door_opens_clockwise = True  # Microwave door opens clockwise
+        self.door_opens_clockwise = door_opens_clockwise
         
         # Statistics tracking
         self.total_rotation = 0.0
@@ -1052,8 +1053,25 @@ def main():
         default=0.3,
         help="Weight for predictive force compensation (0-1)"
     )
+    parser.add_argument(
+        "--clockwise",
+        action="store_true",
+        help="Door opens clockwise (hinge on left). Default: True"
+    )
+    parser.add_argument(
+        "--counter_clockwise",
+        action="store_true",
+        help="Door opens counter-clockwise (hinge on right)"
+    )
     
     args = parser.parse_args()
+    
+    # Determine door opening direction
+    if args.counter_clockwise:
+        door_opens_clockwise = False
+    else:
+        # Default to clockwise
+        door_opens_clockwise = True
     
     # Create and run controller
     controller = ContinuousDoorOpener(
@@ -1064,7 +1082,8 @@ def main():
         rotation_gain=args.rotation_gain,
         pull_speed=args.pull_speed,
         sensor_delay=args.sensor_delay,
-        prediction_gain=args.prediction_gain
+        prediction_gain=args.prediction_gain,
+        door_opens_clockwise=door_opens_clockwise
     )
     
     controller.run()
