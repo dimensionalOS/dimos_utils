@@ -69,7 +69,8 @@ class ContinuousDoorOpener:
         pull_speed=0.015,  # 15mm base pull (can boost when aligned)
         sensor_delay=0.2,  # 200ms delay
         prediction_gain=0.3,  # How much to trust force rate prediction
-        door_opens_clockwise=True  # Door opening direction
+        door_opens_clockwise=True,  # Door opening direction
+        rotation_axis='z'  # Rotation axis: 'x', 'y', or 'z'
     ):
         """
         Initialize the continuous door opener controller.
@@ -83,6 +84,8 @@ class ContinuousDoorOpener:
             pull_speed: Pull distance per step (m)
             sensor_delay: Expected sensor delay (seconds)
             prediction_gain: Weight for predictive compensation (0-1)
+            door_opens_clockwise: Whether door opens clockwise (True) or counter-clockwise (False)
+            rotation_axis: Axis to rotate around ('x', 'y', or 'z' in world frame)
         """
         
         # Start meshcat
@@ -97,6 +100,11 @@ class ContinuousDoorOpener:
         self.pull_speed = pull_speed
         self.sensor_delay = sensor_delay
         self.prediction_gain = prediction_gain
+        
+        # Validate and store rotation axis
+        if rotation_axis.lower() not in ['x', 'y', 'z']:
+            raise ValueError(f"Invalid rotation_axis '{rotation_axis}'. Must be 'x', 'y', or 'z'")
+        self.rotation_axis = rotation_axis.lower()
         
         # Motion limits
         self.max_rotation_per_step = 0.2  # 11.5 degrees max per step
@@ -485,26 +493,43 @@ class ContinuousDoorOpener:
         
         # Apply rotation around pivot if needed
         if abs(rotation_angle) > 0.001:
-            # Create rotation matrix for yaw rotation
+            # Create rotation matrix based on selected axis
             c = np.cos(rotation_angle)
             s = np.sin(rotation_angle)
-            yaw_rotation = np.array([
-                [c, -s, 0],
-                [s, c, 0],
-                [0, 0, 1]
-            ])
+            
+            if self.rotation_axis == 'x':
+                # Rotation around X-axis (pitch)
+                rotation_matrix = np.array([
+                    [1, 0, 0],
+                    [0, c, -s],
+                    [0, s, c]
+                ])
+            elif self.rotation_axis == 'y':
+                # Rotation around Y-axis (roll)
+                rotation_matrix = np.array([
+                    [c, 0, s],
+                    [0, 1, 0],
+                    [-s, 0, c]
+                ])
+            else:  # self.rotation_axis == 'z'
+                # Rotation around Z-axis (yaw)
+                rotation_matrix = np.array([
+                    [c, -s, 0],
+                    [s, c, 0],
+                    [0, 0, 1]
+                ])
             
             # Vector from pivot to current openft position
             pivot_to_openft = current_pos - pivot_point_world
             
-            # Rotate this vector around z-axis
-            new_pivot_to_openft = yaw_rotation @ pivot_to_openft
+            # Rotate this vector around selected axis
+            new_pivot_to_openft = rotation_matrix @ pivot_to_openft
             
             # New position after rotation
             rotated_position = pivot_point_world + new_pivot_to_openft
             
             # Also rotate the orientation
-            rotated_orientation = RotationMatrix(yaw_rotation @ current_rot.matrix())
+            rotated_orientation = RotationMatrix(rotation_matrix @ current_rot.matrix())
         else:
             rotated_position = current_pos
             rotated_orientation = current_rot
@@ -899,6 +924,7 @@ class ContinuousDoorOpener:
         print(f"  - Pull speed: {self.pull_speed*1000:.1f}mm per step")
         print(f"  - Sensor delay compensation: {self.sensor_delay*1000:.0f}ms")
         print(f"  - Door type: {'CLOCKWISE' if self.door_opens_clockwise else 'COUNTER-CLOCKWISE'}")
+        print(f"  - Rotation axis: {self.rotation_axis.upper()}-axis (world frame)")
         print("Press Ctrl+C to stop")
         print("="*60 + "\n")
         
@@ -1063,6 +1089,13 @@ def main():
         action="store_true",
         help="Door opens counter-clockwise (hinge on right)"
     )
+    parser.add_argument(
+        "--rotation_axis",
+        type=str,
+        default='z',
+        choices=['x', 'y', 'z'],
+        help="Axis to rotate around in world frame (default: z for vertical axis)"
+    )
     
     args = parser.parse_args()
     
@@ -1083,7 +1116,8 @@ def main():
         pull_speed=args.pull_speed,
         sensor_delay=args.sensor_delay,
         prediction_gain=args.prediction_gain,
-        door_opens_clockwise=door_opens_clockwise
+        door_opens_clockwise=door_opens_clockwise,
+        rotation_axis=args.rotation_axis
     )
     
     controller.run()

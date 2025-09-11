@@ -274,7 +274,7 @@ class ForceTorqueCalibrator:
             while True:
                 try:
                     # Receive data with timeout
-                    if sub_socket.poll(100):  # 100ms timeout
+                    if sub_socket.poll(0):  # 100ms timeout
                         data_str = sub_socket.recv_string()
                         data = json.loads(data_str)
                         
