@@ -1046,13 +1046,13 @@ def main():
     parser.add_argument(
         "--pivot_distance",
         type=float,
-        default=0.2,
+        default=0.21,
         help="Distance to virtual pivot point (meters)"
     )
     parser.add_argument(
         "--force_threshold",
         type=float,
-        default=7.0,
+        default=10.0,
         help="Target force threshold (N)"
     )
     parser.add_argument(
